@@ -12,12 +12,9 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/user" element={<Profile />} />
-        <Route path="/tutorial" element={<Tutorial />} /> // for hard coded
-        tutorials
-        <Route path="/upload" element={<Upload />} /> // for after pictures are
-        uploaded
-        <Route path="/history" element={<History />} /> // for after pictures
-        are uploaded
+        <Route path="/tutorial/:id" element={<Tutorial />} />
+        <Route path="/upload" element={<Upload />} />
+        <Route path="/history" element={<History />} />
       </Routes>
     </Router>
   );
