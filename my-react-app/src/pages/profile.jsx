@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import pfpImage from "/avatar.jpeg";
+import pfpImage from "/pfp.png";
 import { useUserProfile } from "../hooks/useUserProfile";
 import { supabase } from "../lib/supabaseClient";
 

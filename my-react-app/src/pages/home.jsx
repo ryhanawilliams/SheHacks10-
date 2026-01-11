@@ -12,7 +12,7 @@ export default function Home() {
   const [items, setItems] = useState(ITEMS);
   const [qrOpen, setQrOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState(""); 
   const navigate = useNavigate();
 
   // Load liked status from Supabase on mount
@@ -141,11 +141,12 @@ export default function Home() {
           <div className="w-[10%] h-full flex items-center justify-end mr-4">
             <div className="flex flex-end items-center space-x-2">
               <img
-                src="/avatar.jpeg" // put this in /public or replace with URL
+                src="/pfp.png" // put this in /public or replace with URL
                 alt="User avatar"
                 className="w-12 h-12 rounded-full object-cover cursor-pointer"
                 onClick={() => navigate("/user")}
-              />
+                
+                />
             </div>
           </div>
         </div>
