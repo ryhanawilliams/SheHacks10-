@@ -100,7 +100,7 @@ export default function Upload({
   }
 
   return (
-    <div className="w-full h-full flex flex-col p-6 gap-4">
+    <div className="w-[94%] h-[80%] flex flex-col py-6 my-4 gap-4">
       <input
         ref={inputRef}
         type="file"

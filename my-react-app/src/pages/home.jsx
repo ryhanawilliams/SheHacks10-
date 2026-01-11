@@ -13,7 +13,9 @@ export default function Home() {
   const navigate = useNavigate();
 
   function toggleLike(id) {
-    setItems((prev) => prev.map((x) => (x.id === id ? { ...x, liked: !x.liked } : x)));
+    setItems((prev) =>
+      prev.map((x) => (x.id === id ? { ...x, liked: !x.liked } : x))
+    );
   }
 
   async function handleContinue(file) {
@@ -30,7 +32,9 @@ export default function Home() {
       navigate("/results");
     } catch (error) {
       console.error("Error analyzing image:", error);
-      const errorMsg = error.message || "Failed to analyze image. Make sure the backend server is running on port 4000.";
+      const errorMsg =
+        error.message ||
+        "Failed to analyze image. Make sure the backend server is running on port 4000.";
       alert(`Error: ${errorMsg}`);
     }
   }
@@ -56,7 +60,7 @@ export default function Home() {
         </div>
 
         {/* Upload card */}
-        <div className="w-[90%] h-[30%] mb-8 border-2 border-gray-300 shadow-lg rounded-3xl">
+        <div className="w-[90%] h-[90%] mb-8 border-2 border-gray-300 shadow-lg rounded-3xl flex justify-center">
           <Upload
             multiple={false}
             maxFiles={1}
@@ -75,7 +79,11 @@ export default function Home() {
 
         {/* Grid */}
         <div className="w-[90%] h-[80%]">
-          <BentoGrid items={items} categories={CATEGORIES} onToggleLike={toggleLike} />
+          <BentoGrid
+            items={items}
+            categories={CATEGORIES}
+            onToggleLike={toggleLike}
+          />
         </div>
       </div>
     </div>
