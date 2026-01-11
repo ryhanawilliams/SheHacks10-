@@ -1,4 +1,8 @@
+// items.js
 import tanktop from "../assets/tanktop.jpg";
+import tanktop1 from "../assets/tanktop1.jpg";
+import tanktop2 from "../assets/tanktop2.jpg";
+import tanktop3 from "../assets/tanktop3.jpg";
 import appleShelf from "../assets/apple.jpg";
 import bookmark from "../assets/bookmark.jpg";
 import glass from "../assets/jar.jpg";
@@ -10,7 +14,7 @@ import earrings from "../assets/earrings.jpg";
 import cd from "../assets/cd.jpg";
 import watch from "../assets/watch earrings.jpg";
 import table from "../assets/table.jpg";
-import sprinkler from "../assets/sprinkler.jpg";
+import sprinkler from "../assets/sprinkler.JPG";
 import lights from "../assets/lights.jpg";
 
 export const CATEGORIES = [
@@ -49,49 +53,61 @@ export const LAYOUT = {
 export const ITEMS = [
   {
     id: "1",
-    title: "Fabric Scrap Fruit Tank Tops",
+    title: "Fabric Spring Fruit Tote Tops",
     category: "Fabric",
     liked: true,
     src: tanktop,
     layoutKey: "fabricTote",
     tutorial: {
       title: "Fabric Spring Fruit Tote Tops",
-      hero: { src: "", alt: "Fabric Spring Fruit Tote Tops" },
+      hero: { src: tanktop, alt: "Fabric Spring Fruit Tote Tops" },
       meta: { badgeLeft: "AI Generated Tutorial", readTime: "15-minute craft" },
       materials: {
         heading: "Preparation & Materials",
         sections: [
           {
-            title: "Get Started",
-            body: "Before you start, gather your materials and set up your workspace.",
+            title: "The Pattern",
+            body: "Choose a simple \"Tank Top\" or \"Boxy Tee\" pattern. If you don't have one, you can trace a shirt you already own (adding 1.5cm for \"seam allowance\" all around).",
           },
           {
-            title: "Materials",
-            bullets: ["Fabric scraps", "Scissors", "Sewing machine or needle and thread", "Iron"],
+            title: "Fabric Choice",
+            body: "Use Cotton Poplin or Linen for the fruity patches, as they are stable and won't fray as much as knits.",
+          },
+          {
+            title: "Pre-Wash",
+            body: "Always wash your fabrics first! Different fabrics shrink at different rates; you don't want your strawberry to shrink and pull the shirt fabric after the first wash.",
           },
         ],
-        image: { src: "", alt: "Materials image" },
       },
       steps: [
         {
-          title: "Cut and prepare fabric",
-          intro: "Cut your fabric pieces to the desired size for your tote bag.",
-          bullets: ["Measure and cut main fabric", "Cut lining fabric", "Cut handles"],
+          title: "Templates",
+          intro: "Draft Your Shapes: On a piece of paper, draw your fruit (strawberry or lemon) and its corresponding leaf. Cut these out to use as stencils.",
+          bullets: [
+            "Prep the Appliqué Fabric: Choose your scraps (gingham for the fruit, green for the leaf).",
+            "Tip: If you want the fruit to be sturdy, iron fusible web (like HeatnBond) to the back of the scraps before cutting.",
+            "Cut the Fruit: Trace your paper stencils onto the fabric and cut them out. You should have a separate fabric piece for the fruit body and the leaf.",
+          ],
+          image: { src: tanktop1, alt: "Templates and fabric preparation" },
         },
         {
-          title: "Sew the bag",
-          bullets: ["Sew the sides together", "Attach the bottom", "Turn right side out"],
-          image: { src: "", alt: "Sewing step" },
+          title: "Sewing the Motifs",
+          intro: "You have two main options for the \"embroidery\" look using a sewing machine:",
+          bullets: [
+            "The Zig-Zag (Appliqué) Stitch: Set your machine to a very short width and short length (satin stitch). This covers the raw edges of the fabric completely so they never fray.",
+            "The Straight Stitch (Free Motion): Use a straight stitch about 2mm from the edge. This allows the edges to fray slightly for a \"handmade\" look, similar to your reference photo.",
+          ],
+          image: { src: tanktop2, alt: "Sewing the motifs" },
         },
         {
-          title: "Add handles",
-          intro: "Attach handles to complete your tote bag.",
-          bullets: ["Position handles", "Sew securely", "Reinforce stitches"],
-        },
-        {
-          title: "Finish and press",
-          bullets: ["Press seams", "Trim threads", "Add decorative touches if desired"],
-          image: { src: "", alt: "Finished tote" },
+          title: "Add Finishing Touches",
+          intro: "Personalize your creation with decorative elements.",
+          bullets: [
+            "Add any embellishments or decorations",
+            "Trim any excess material",
+            "Give it a final inspection",
+          ],
+          image: { src: tanktop3, alt: "Finishing touches" },
         },
       ],
     },
@@ -105,37 +121,39 @@ export const ITEMS = [
     layoutKey: "appleShelf",
     tutorial: {
       title: "Cardboard Apple Shelf",
-      hero: { src: "", alt: "Cardboard Apple Shelf" },
+      hero: { src: appleShelf, alt: "Cardboard Apple Shelf" },
       meta: { badgeLeft: "AI Generated Tutorial", readTime: "20-minute craft" },
       materials: {
         heading: "Preparation & Materials",
         sections: [
           {
             title: "Get Started",
-            body: "Collect sturdy cardboard boxes and prepare your workspace.",
+            body: "Create a functional and decorative shelf from cardboard boxes, perfect for displaying items or organizing your space.",
           },
           {
             title: "Materials",
-            bullets: ["Cardboard boxes", "Box cutter", "Ruler", "Strong glue or tape", "Paint (optional)"],
+            bullets: ["Sturdy cardboard boxes", "Box cutter or utility knife", "Ruler and pencil", "Strong glue or heavy-duty tape", "Paint and brushes (optional)"],
           },
         ],
-        image: { src: "", alt: "Materials image" },
       },
       steps: [
         {
-          title: "Design and measure",
-          intro: "Plan your shelf dimensions and cut the cardboard pieces.",
-          bullets: ["Measure desired shelf size", "Mark cutting lines", "Cut main pieces"],
+          title: "Design and cut pieces",
+          intro: "Plan your shelf design and cut all necessary cardboard pieces.",
+          bullets: ["Measure and mark shelf dimensions", "Cut main shelf pieces", "Cut support brackets", "Cut decorative apple shapes if desired"],
+          image: { src: appleShelf, alt: "Cutting cardboard pieces" },
         },
         {
-          title: "Assemble the structure",
-          bullets: ["Create support structure", "Attach shelves", "Reinforce corners"],
-          image: { src: "", alt: "Assembly step" },
+          title: "Assemble the shelf",
+          intro: "Construct the shelf structure using glue or tape.",
+          bullets: ["Attach support brackets to back piece", "Secure shelf pieces in place", "Reinforce all joints", "Let glue dry completely"],
+          image: { src: appleShelf, alt: "Assembling the shelf" },
         },
         {
-          title: "Finish and decorate",
-          intro: "Add finishing touches to your shelf.",
-          bullets: ["Smooth edges", "Paint or decorate", "Let dry completely"],
+          title: "Decorate and finish",
+          intro: "Add decorative elements and finish your shelf.",
+          bullets: ["Paint the shelf in your chosen colors", "Add apple decorations or patterns", "Smooth any rough edges", "Let paint dry before use"],
+          image: { src: appleShelf, alt: "Finished apple shelf" },
         },
       ],
     },
@@ -149,7 +167,7 @@ export const ITEMS = [
     layoutKey: "fabricBookmark",
     tutorial: {
       title: "Fabric Bookmark",
-      hero: { src: "", alt: "Fabric Bookmark" },
+      hero: { src: bookmark, alt: "Fabric Bookmark" },
       meta: { badgeLeft: "AI Generated Tutorial", readTime: "5-minute craft" },
       materials: {
         heading: "Preparation & Materials",
@@ -163,7 +181,6 @@ export const ITEMS = [
             bullets: ["Fabric scraps", "Scissors", "Fabric glue or needle and thread", "Ribbon or tassel (optional)"],
           },
         ],
-        image: { src: "", alt: "Materials image" },
       },
       steps: [
         {
@@ -174,7 +191,7 @@ export const ITEMS = [
         {
           title: "Assemble bookmark",
           bullets: ["Glue or sew pieces together", "Add ribbon or tassel", "Trim edges"],
-          image: { src: "", alt: "Bookmark assembly" },
+          image: { src: bookmark, alt: "Bookmark assembly" },
         },
       ],
     },
@@ -188,7 +205,7 @@ export const ITEMS = [
     layoutKey: "stampGlass",
     tutorial: {
       title: "Stamp Glass Jars",
-      hero: { src: "", alt: "Stamp Glass Jars" },
+      hero: { src: glass, alt: "Stamp Glass Jars" },
       meta: { badgeLeft: "AI Generated Tutorial", readTime: "10-minute craft" },
       materials: {
         heading: "Preparation & Materials",
@@ -202,7 +219,6 @@ export const ITEMS = [
             bullets: ["Glass jars", "Rubber stamps", "Acrylic paint or ink", "Sealant (optional)"],
           },
         ],
-        image: { src: "", alt: "Materials image" },
       },
       steps: [
         {
@@ -213,7 +229,7 @@ export const ITEMS = [
         {
           title: "Apply stamps",
           bullets: ["Apply paint to stamp", "Press onto jar", "Repeat pattern"],
-          image: { src: "", alt: "Stamping step" },
+          image: { src: glass, alt: "Stamping step" },
         },
         {
           title: "Seal and finish",
@@ -232,7 +248,7 @@ export const ITEMS = [
     layoutKey: "scrapHearts",
     tutorial: {
       title: "Scrap Hearts",
-      hero: { src: "", alt: "Scrap Hearts" },
+      hero: { src: scrap, alt: "Scrap Hearts" },
       meta: { badgeLeft: "AI Generated Tutorial", readTime: "10-minute craft" },
       materials: {
         heading: "Preparation & Materials",
@@ -246,7 +262,6 @@ export const ITEMS = [
             bullets: ["Fabric scraps", "Scissors", "Needle and thread or glue", "Stuffing (optional)"],
           },
         ],
-        image: { src: "", alt: "Materials image" },
       },
       steps: [
         {
@@ -257,7 +272,7 @@ export const ITEMS = [
         {
           title: "Sew or glue together",
           bullets: ["Place pieces together", "Sew or glue edges", "Leave opening for stuffing"],
-          image: { src: "", alt: "Assembly step" },
+          image: { src: scrap, alt: "Assembly step" },
         },
         {
           title: "Finish hearts",
@@ -276,7 +291,7 @@ export const ITEMS = [
     layoutKey: "planterBottle",
     tutorial: {
       title: "Planter Bottle",
-      hero: { src: "", alt: "Planter Bottle" },
+      hero: { src: bottle, alt: "Planter Bottle" },
       meta: { badgeLeft: "AI Generated Tutorial", readTime: "15-minute craft" },
       materials: {
         heading: "Preparation & Materials",
@@ -290,7 +305,6 @@ export const ITEMS = [
             bullets: ["Glass or plastic bottle", "Paint or markers", "Drill or cutting tool", "Potting soil", "Small plant"],
           },
         ],
-        image: { src: "", alt: "Materials image" },
       },
       steps: [
         {
@@ -301,7 +315,7 @@ export const ITEMS = [
         {
           title: "Decorate the bottle",
           bullets: ["Paint or decorate exterior", "Let dry completely", "Add drainage holes"],
-          image: { src: "", alt: "Decorating step" },
+          image: { src: bottle, alt: "Decorating step" },
         },
         {
           title: "Plant and finish",
@@ -320,7 +334,7 @@ export const ITEMS = [
     layoutKey: "jeanWallet",
     tutorial: {
       title: "Jean Wallet",
-      hero: { src: "", alt: "Jean Wallet" },
+      hero: { src: jean, alt: "Jean Wallet" },
       meta: { badgeLeft: "AI Generated Tutorial", readTime: "30-minute craft" },
       materials: {
         heading: "Preparation & Materials",
@@ -334,7 +348,6 @@ export const ITEMS = [
             bullets: ["Old jeans", "Scissors", "Sewing machine or needle and thread", "Zipper or button (optional)"],
           },
         ],
-        image: { src: "", alt: "Materials image" },
       },
       steps: [
         {
@@ -345,7 +358,7 @@ export const ITEMS = [
         {
           title: "Sew the wallet",
           bullets: ["Sew card slots", "Attach main pieces", "Add closure"],
-          image: { src: "", alt: "Sewing step" },
+          image: { src: jean, alt: "Sewing step" },
         },
         {
           title: "Finish edges",
@@ -357,14 +370,14 @@ export const ITEMS = [
   },
   {
     id: "8",
-    title: "Artistic Can Vases",
+    title: "A-Plastic Can Vases",
     category: "Misc.",
     liked: false,
     src: vase,
     layoutKey: "plasticVases",
     tutorial: {
       title: "A-Plastic Can Vases",
-      hero: { src: "", alt: "A-Plastic Can Vases" },
+      hero: { src: vase, alt: "A-Plastic Can Vases" },
       meta: { badgeLeft: "AI Generated Tutorial", readTime: "20-minute craft" },
       materials: {
         heading: "Preparation & Materials",
@@ -378,7 +391,6 @@ export const ITEMS = [
             bullets: ["Plastic cans", "Paint or spray paint", "Decorative materials", "Clear sealant"],
           },
         ],
-        image: { src: "", alt: "Materials image" },
       },
       steps: [
         {
@@ -389,7 +401,7 @@ export const ITEMS = [
         {
           title: "Decorate the cans",
           bullets: ["Apply base coat", "Add decorative elements", "Let dry"],
-          image: { src: "", alt: "Decorating step" },
+          image: { src: vase, alt: "Decorating step" },
         },
         {
           title: "Seal and finish",
@@ -408,7 +420,7 @@ export const ITEMS = [
     layoutKey: "earringsGoogly",
     tutorial: {
       title: "Bread Clip Googly Eye Earrings",
-      hero: { src: "", alt: "Bread Clip Googly Eye Earrings" },
+      hero: { src: earrings, alt: "Bread Clip Googly Eye Earrings" },
       meta: { badgeLeft: "AI Generated Tutorial", readTime: "5-minute craft" },
       materials: {
         heading: "Preparation & Materials",
@@ -422,7 +434,6 @@ export const ITEMS = [
             bullets: ["Bread clips", "Googly eyes", "Hot glue gun", "Earring hooks"],
           },
         ],
-        image: { src: "", alt: "Materials image" },
       },
       steps: [
         {
@@ -433,7 +444,7 @@ export const ITEMS = [
         {
           title: "Attach googly eyes",
           bullets: ["Glue eyes to clips", "Let dry", "Attach earring hooks"],
-          image: { src: "", alt: "Assembly step" },
+          image: { src: earrings, alt: "Assembly step" },
         },
       ],
     },
@@ -447,7 +458,7 @@ export const ITEMS = [
     layoutKey: "cd",
     tutorial: {
       title: "CD Upcycling Project",
-      hero: { src: "", alt: "CD Upcycling Project" },
+      hero: { src: cd, alt: "CD Upcycling Project" },
       meta: { badgeLeft: "AI Generated Tutorial", readTime: "15-minute craft" },
       materials: {
         heading: "Preparation & Materials",
@@ -461,7 +472,6 @@ export const ITEMS = [
             bullets: ["Old CDs", "Paint or markers", "Glue", "Decorative materials"],
           },
         ],
-        image: { src: "", alt: "Materials image" },
       },
       steps: [
         {
@@ -472,7 +482,7 @@ export const ITEMS = [
         {
           title: "Decorate",
           bullets: ["Apply paint or markers", "Add decorative elements", "Let dry"],
-          image: { src: "", alt: "Decorating step" },
+          image: { src: cd, alt: "Decorating step" },
         },
         {
           title: "Finish project",
@@ -484,14 +494,14 @@ export const ITEMS = [
   },
   {
     id: "11",
-    title: "Watch Earrings",
+    title: "Violin Earrings",
     category: "Misc.",
     liked: true,
     src: watch,
     layoutKey: "violinEarrings",
     tutorial: {
       title: "Violin Earrings",
-      hero: { src: "", alt: "Violin Earrings" },
+      hero: { src: watch, alt: "Violin Earrings" },
       meta: { badgeLeft: "AI Generated Tutorial", readTime: "20-minute craft" },
       materials: {
         heading: "Preparation & Materials",
@@ -505,7 +515,6 @@ export const ITEMS = [
             bullets: ["Wood or plastic pieces", "Small violin shapes", "Earring hooks", "Paint or varnish"],
           },
         ],
-        image: { src: "", alt: "Materials image" },
       },
       steps: [
         {
@@ -516,7 +525,7 @@ export const ITEMS = [
         {
           title: "Decorate and finish",
           bullets: ["Paint or varnish", "Add details", "Attach earring hooks"],
-          image: { src: "", alt: "Finishing step" },
+          image: { src: watch, alt: "Finishing step" },
         },
       ],
     },
@@ -528,21 +537,141 @@ export const ITEMS = [
     liked: false,
     src: sprinkler,
     layoutKey: "plasticBottleSprinkler",
+    tutorial: {
+      title: "Plastic Bottle Sprinkler",
+      hero: { src: table, alt: "Plastic Bottle Sprinkler" },
+      meta: { badgeLeft: "AI Generated Tutorial", readTime: "10-minute project" },
+      materials: {
+        heading: "Preparation & Materials",
+        sections: [
+          {
+            title: "Get Started",
+            body: "Create a unique coffee table using old vinyl records.",
+          },
+          {
+            title: "Materials",
+            bullets: ["Old vinyl records", "Table base or legs", "Glass or clear top", "Adhesive", "Protective coating", "Measuring tools"],
+          },
+        ],
+      },
+      steps: [
+        {
+          title: "Prepare the base",
+          intro: "Set up your table base and plan the layout.",
+          bullets: ["Choose table base", "Measure dimensions", "Prepare surface"],
+        },
+        {
+          title: "Arrange vinyl records",
+          bullets: ["Plan layout pattern", "Arrange records on base", "Secure in place with adhesive"],
+          image: { src: table, alt: "Arrangement step" },
+        },
+        {
+          title: "Add protective top",
+          intro: "Protect your vinyl table with a clear top.",
+          bullets: ["Measure for glass or acrylic top", "Install protective layer", "Finish edges"],
+        },
+        {
+          title: "Final assembly",
+          bullets: ["Attach legs if needed", "Test stability", "Add final decorative touches"],
+          image: { src: table, alt: "Final assembly" },
+        },
+      ],
+    },
   },
   {
     id: "13",
     title: "Vinyl Coffee Table",
-    category: "Misc.",
+    category: "Wood",
     liked: true,
     src: table,
     layoutKey: "vinylCoffeeTable",
+    tutorial: {
+      title: "Vinyl Coffee Table",
+      hero: { src: table, alt: "Vinyl Coffee Table" },
+      meta: { badgeLeft: "AI Generated Tutorial", readTime: "2-hour project" },
+      materials: {
+        heading: "Preparation & Materials",
+        sections: [
+          {
+            title: "Get Started",
+            body: "Create a unique coffee table using old vinyl records.",
+          },
+          {
+            title: "Materials",
+            bullets: ["Old vinyl records", "Table base or legs", "Glass or clear top", "Adhesive", "Protective coating", "Measuring tools"],
+          },
+        ],
+      },
+      steps: [
+        {
+          title: "Prepare the base",
+          intro: "Set up your table base and plan the layout.",
+          bullets: ["Choose table base", "Measure dimensions", "Prepare surface"],
+        },
+        {
+          title: "Arrange vinyl records",
+          bullets: ["Plan layout pattern", "Arrange records on base", "Secure in place with adhesive"],
+          image: { src: table, alt: "Arrangement step" },
+        },
+        {
+          title: "Add protective top",
+          intro: "Protect your vinyl table with a clear top.",
+          bullets: ["Measure for glass or acrylic top", "Install protective layer", "Finish edges"],
+        },
+        {
+          title: "Final assembly",
+          bullets: ["Attach legs if needed", "Test stability", "Add final decorative touches"],
+          image: { src: table, alt: "Final assembly" },
+        },
+      ],
+    },
   },
   {
     id: "14",
     title: "Plastic Bottle Lights",
-    category: "Bottles",
+    category: "Plastic",
     liked: false,
     src: lights,
     layoutKey: "plasticBottleLights",
+    tutorial: {
+      title: "Plastic Bottle Lights",
+      hero: { src: table, alt: "Plastic Bottle Lights" },
+      meta: { badgeLeft: "AI Generated Tutorial", readTime: "2-hour project" },
+      materials: {
+        heading: "Preparation & Materials",
+        sections: [
+          {
+            title: "Get Started",
+            body: "Create a unique coffee table using old vinyl records.",
+          },
+          {
+            title: "Materials",
+            bullets: ["Old vinyl records", "Table base or legs", "Glass or clear top", "Adhesive", "Protective coating", "Measuring tools"],
+          },
+        ],
+      },
+      steps: [
+        {
+          title: "Prepare the base",
+          intro: "Set up your table base and plan the layout.",
+          bullets: ["Choose table base", "Measure dimensions", "Prepare surface"],
+        },
+        {
+          title: "Arrange vinyl records",
+          bullets: ["Plan layout pattern", "Arrange records on base", "Secure in place with adhesive"],
+          image: { src: table, alt: "Arrangement step" },
+        },
+        {
+          title: "Add protective top",
+          intro: "Protect your vinyl table with a clear top.",
+          bullets: ["Measure for glass or acrylic top", "Install protective layer", "Finish edges"],
+        },
+        {
+          title: "Final assembly",
+          bullets: ["Attach legs if needed", "Test stability", "Add final decorative touches"],
+          image: { src: table, alt: "Final assembly" },
+        },
+      ],
+    },
   },
 ];
