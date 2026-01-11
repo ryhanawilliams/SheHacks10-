@@ -7,19 +7,79 @@ import Upload from "./pages/upload.jsx";
 import History from "./pages/history.jsx";
 import Results from "./pages/results.jsx";
 import CapturePage from "./pages/CapturePage.jsx";
-
+import LoginPage from "./pages/LoginPage.jsx";
+import RequireAuth from "./components/RequireAuth.jsx";
+import Likes from "./pages/LikedTutorials.jsx";
 
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/user" element={<Profile />} />
-        <Route path="/tutorial/:id" element={<Tutorial />} />
-        <Route path="/results" element={<Results />} />
-        <Route path="/upload" element={<Upload />} />
-        <Route path="/history" element={<History />} />
-        <Route path="/capture" element={<CapturePage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route
+          path="/"
+          element={
+            <RequireAuth>
+              <Home />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/user"
+          element={
+            <RequireAuth>
+              <Profile />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/tutorial/:id"
+          element={
+            <RequireAuth>
+              <Tutorial />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/results"
+          element={
+            <RequireAuth>
+              <Results />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/upload"
+          element={
+            <RequireAuth>
+              <Upload />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/history"
+          element={
+            <RequireAuth>
+              <History />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/capture"
+          element={
+            <RequireAuth>
+              <CapturePage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/likes"
+          element={
+            <RequireAuth>
+              <Likes />
+            </RequireAuth>
+          }
+        />
       </Routes>
     </Router>
   );

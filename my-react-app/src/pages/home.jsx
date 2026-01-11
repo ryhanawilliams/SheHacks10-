@@ -6,6 +6,7 @@ import Upload from "../components/upload.jsx";
 import QrUploadModal from "../components/QrUploadModal.jsx";
 import { ITEMS, CATEGORIES } from "../data/items.jsx";
 import { analyzeTrashImage, fileToDataUrl } from "../lib/analyzeTrashImage";
+import { supabase } from "../lib/supabaseClient";
 
 export default function Home() {
   const [items, setItems] = useState(ITEMS);
@@ -14,7 +15,58 @@ export default function Home() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const navigate = useNavigate();
 
-  function toggleLike(id) {
+  // Load liked status from Supabase on mount
+  useEffect(() => {
+    const loadLikedStatus = async () => {
+      const { data: userRes } = await supabase.auth.getUser();
+      const user = userRes.user;
+      if (!user) return;
+
+      const { data } = await supabase
+        .from("likes")
+        .select("tutorial_id")
+        .eq("user_id", user.id);
+
+      if (data) {
+        const likedIds = new Set(data.map((like) => like.tutorial_id));
+        setItems((prev) =>
+          prev.map((item) => ({
+            ...item,
+            liked: likedIds.has(item.id),
+          }))
+        );
+      }
+    };
+
+    loadLikedStatus();
+  }, []);
+
+  async function toggleLike(id) {
+    const { data: userRes } = await supabase.auth.getUser();
+    const user = userRes.user;
+    if (!user) return alert("Please log in first.");
+
+    const item = items.find((x) => x.id === id);
+    const isCurrentlyLiked = item?.liked;
+
+    if (!isCurrentlyLiked) {
+      // Like the tutorial
+      const { error } = await supabase.from("likes").insert({
+        user_id: user.id,
+        tutorial_id: id,
+      });
+      if (error) return alert(error.message);
+    } else {
+      // Unlike the tutorial
+      const { error } = await supabase
+        .from("likes")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("tutorial_id", id);
+      if (error) return alert(error.message);
+    }
+
+    // Update local state
     setItems((prev) =>
       prev.map((x) => (x.id === id ? { ...x, liked: !x.liked } : x))
     );
@@ -76,7 +128,7 @@ export default function Home() {
           src="/Heart4.png"
           alt="likes"
           className="w-8 h-8 hover:cursor-pointer hover:opacity-90 duration-500"
-          onClick={() => navigate("/user")}
+          onClick={() => navigate("/likes")}
         />
       </div>
       <div className="w-[95%] h-full flex flex-col items-center overflow-y-auto">
