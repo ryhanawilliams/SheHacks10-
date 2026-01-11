@@ -23,10 +23,10 @@ export const LAYOUT = {
   planterBottle: "md:[grid-column:10/span_3] md:[grid-row:1/span_2]",
   jeanWallet: "md:[grid-column:10/span_3] md:[grid-row:3/span_3]",
 
-  plasticVases: "md:[grid-column:1/span_4] md:[grid-row:5/span_3]",
+  plasticVases: "md:[grid-column:1/span_5] md:[grid-row:5/span_3]",
   earringsGoogly: "md:[grid-column:6/span_4] md:[grid-row:4/span_2]",
-  cd: "md:[grid-column:5/span_3] md:[grid-row:6/span_2]",
-  violinEarrings: "md:[grid-column7/span_3] md:[grid-row:6/span_2]",
+  cd: "md:[grid-column:6/span_2] md:[grid-row:6/span_2]",
+  violinEarrings: "md:[grid-column5/span_2] md:[grid-row:6/span_2]",
 
   vinylTableLeft: "md:[grid-column:1/span_4] md:[grid-row:8/span_3]",
   vinylTableMid: "md:[grid-column:5/span_4] md:[grid-row:8/span_3]",
