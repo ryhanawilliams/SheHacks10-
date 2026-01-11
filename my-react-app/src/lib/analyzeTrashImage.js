@@ -7,17 +7,21 @@ export async function analyzeTrashImage(file) {
   try {
     const res = await fetch(`${API_BASE}/analyze`, {
       method: "POST",
-      body: form,
+      body: fd,
     });
 
     if (!res.ok) {
       const errorText = await res.text().catch(() => "");
-      throw new Error(errorText || `Server error: ${res.status} ${res.statusText}`);
+      throw new Error(
+        errorText || `Server error: ${res.status} ${res.statusText}`
+      );
     }
     return res.json();
   } catch (error) {
     if (error.message.includes("fetch")) {
-      throw new Error("Failed to connect to server. Make sure the backend is running on port 4000.");
+      throw new Error(
+        "Failed to connect to server. Make sure the backend is running on port 4000."
+      );
     }
     throw error;
   }

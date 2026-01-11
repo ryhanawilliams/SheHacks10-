@@ -1,13 +1,13 @@
 import React, { useMemo, useRef, useState } from "react";
 
 export default function Upload({
-  multiple = false,                 // for your flow: single image is simpler
+  multiple = false, // for your flow: single image is simpler
   accept = "image/*",
   maxFiles = 1,
   maxSizeMB = 10,
-  onFilesChange,   
-  onTakePhoto,                // (files: File[]) => void
-  onContinue,                      // async (file: File) => void
+  onFilesChange,
+  onTakePhoto, // (files: File[]) => void
+  onContinue, // async (file: File) => void
 }) {
   const inputRef = useRef(null);
   const [files, setFiles] = useState([]); // File[]
@@ -85,9 +85,12 @@ export default function Upload({
     try {
       await onContinue?.(firstFile);
     } catch (err) {
-      const errorMsg = err?.message || "Something went wrong analyzing the image.";
+      const errorMsg =
+        err?.message || "Something went wrong analyzing the image.";
       if (errorMsg.includes("fetch") || errorMsg.includes("Failed to fetch")) {
-        setError("Cannot connect to server. Make sure the backend is running on port 4000.");
+        setError(
+          "Cannot connect to server. Make sure the backend is running on port 4000."
+        );
       } else {
         setError(errorMsg);
       }
@@ -113,7 +116,7 @@ export default function Upload({
         </div>
       ) : null}
 
-{files.length > 0 ? (
+      {files.length > 0 ? (
         <div
           className="flex-1 rounded-2xl bg-white p-4 overflow-auto hover:bg-[#F5F5F5] transition-colors duration-300"
           style={{
@@ -142,7 +145,9 @@ export default function Upload({
                   <div className="truncate text-sm font-medium text-zinc-900">
                     {f.name}
                   </div>
-                  <div className="text-xs text-zinc-500">{formatBytes(f.size)}</div>
+                  <div className="text-xs text-zinc-500">
+                    {formatBytes(f.size)}
+                  </div>
                 </div>
 
                 <button
@@ -202,9 +207,10 @@ export default function Upload({
         onClick={handleContinue}
         disabled={!firstFile || isSubmitting}
         className={`w-full rounded-2xl px-4 py-3 text-sm font-semibold transition
-          ${!firstFile || isSubmitting
-            ? "bg-zinc-200 text-zinc-500 cursor-not-allowed"
-            : "bg-black text-white hover:bg-zinc-800"
+          ${
+            !firstFile || isSubmitting
+              ? "bg-zinc-200 text-zinc-500 cursor-not-allowed"
+              : "bg-black text-white hover:bg-zinc-800"
           }`}
       >
         {isSubmitting ? "Analyzing..." : "Continue"}

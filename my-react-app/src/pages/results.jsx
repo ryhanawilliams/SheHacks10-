@@ -2,13 +2,14 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const BACKEND = "http://localhost:3001";
-const IDEAS_KEY = "upcycling_ideas"; // we will NOT write big base64 ideas here anymore
+const BACKEND = import.meta.env.VITE_API_BASE || "http://localhost:4000";
 
 export default function Results() {
   const navigate = useNavigate();
+
   const [analysis, setAnalysis] = useState(null);
   const [preview, setPreview] = useState("");
+
   const [ideas, setIdeas] = useState([]); // keep in memory
   const [ideaLoading, setIdeaLoading] = useState(false);
   const [ideaError, setIdeaError] = useState("");
@@ -17,15 +18,8 @@ export default function Results() {
     const raw = sessionStorage.getItem("trash_analysis");
     const img = sessionStorage.getItem("trash_preview");
 
-    console.log("📦 Loading from sessionStorage:");
-    console.log("  - trash_analysis:", raw ? "✓ Found" : "✗ Missing");
-    console.log("  - trash_preview:", img ? "✓ Found" : "✗ Missing");
-
     if (raw) setAnalysis(JSON.parse(raw));
     if (img) setPreview(img);
-
-    // Optional: If you previously stored huge ideas, clear them so they don't cause issues.
-    // sessionStorage.removeItem(IDEAS_KEY);
   }, []);
 
   const confidence = useMemo(() => (analysis?.confidence ?? 0) * 100, [analysis]);
@@ -33,45 +27,44 @@ export default function Results() {
 
   async function generateOneIdea() {
     if (!analysis) return;
+
     setIdeaError("");
     setIdeaLoading(true);
 
     try {
-      console.log("🚀 Sending request to /generate-idea...");
       const r = await fetch(`${BACKEND}/generate-idea`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           analysis,
-          trashImageDataUrl: preview,
-          previousTitles: ideas.map((x) => x.title),
+          previousTitles: ideas.map((x) => x.title).filter(Boolean),
         }),
       });
 
       const text = await r.text();
-      console.log("📥 Response status:", r.status);
-      console.log("📥 Response text (first 500 chars):", text.slice(0, 500));
-
       let data;
+
       try {
         data = JSON.parse(text);
-        console.log("✅ Parsed JSON successfully:", data);
       } catch (parseError) {
-        console.error("❌ Failed to parse JSON:", parseError);
+        console.error("❌ Server did not return JSON:", text);
         throw new Error(
-          `Server did not return JSON.\nStatus: ${r.status}\nFirst chars:\n${text.slice(0, 120)}`
+          `Server did not return JSON.\nStatus: ${r.status}\nFirst chars:\n${text.slice(
+            0,
+            200
+          )}`
         );
       }
 
       if (!r.ok) throw new Error(data?.error || "Failed to generate idea");
       if (data?.error) throw new Error(data.error);
 
+      // Expect: { id, title, imageDataUrl, tutorial }
       if (!data.id || !data.title || !data.tutorial) {
-        console.error("❌ Invalid data structure:", data);
+        console.error("❌ Invalid response structure:", data);
         throw new Error("Invalid response structure from server");
       }
 
-      console.log("✅ Adding idea to list:", data.id, data.title);
       setIdeas((prev) => [data, ...prev]);
     } catch (e) {
       console.error("❌ Error in generateOneIdea:", e);
@@ -171,6 +164,7 @@ export default function Results() {
           </div>
         </div>
 
+        {/* Idea generation section */}
         {!isLowConfidence && (
           <div className="mt-6">
             {ideaError ? (
@@ -187,16 +181,13 @@ export default function Results() {
               {ideaLoading ? "Generating..." : "Generate upcycling idea"}
             </button>
 
+            {/* Ideas appear below button */}
             {ideas.length > 0 ? (
               <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {ideas.map((idea) => (
                   <button
                     key={idea.id}
-                    onClick={() => {
-                      console.log("🔗 Navigating to tutorial:", idea.id);
-                      // ✅ pass full idea through navigation state (no sessionStorage needed)
-                      navigate(`/tutorial/${idea.id}`, { state: { idea } });
-                    }}
+                    onClick={() => navigate(`/tutorial/${idea.id}`, { state: { idea } })}
                     className="text-left rounded-2xl border border-zinc-200 bg-white overflow-hidden hover:bg-zinc-50"
                     type="button"
                   >
