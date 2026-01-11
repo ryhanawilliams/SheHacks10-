@@ -64,8 +64,11 @@ export default function Home() {
 
   return (
     <div className="flex flex-row w-full h-full">
-      <div className="w-[5%] h-full border-r-2 border-gray-300 flex items-center justify-center" />
-
+      <div className="w-[5%] h-full border-r-2 border-gray-300 flex flex-col items-center justify-start py-16 gap-12">
+        <img src="/circl.png" alt="logo" className="w-8 h-8" />
+        <img src="/Icon.png" alt="Home" className="w-8 h-8 hover:cursor-pointer hover:opacity-90 duration-500" onClick={() => navigate("/")}/>
+        <img src="/Heart4.png" alt="likes" className="w-8 h-8 hover:cursor-pointer hover:opacity-90 duration-500" onClick={() => navigate("/user")}/>
+      </div>
       <div className="w-[95%] h-full flex flex-col items-center overflow-y-auto">
         {/* Top bar */}
         <div className="w-[90%] h-20 flex flex-row my-8">
@@ -79,6 +82,7 @@ export default function Home() {
         src="/avatar.jpeg" // put this in /public or replace with URL
         alt="User avatar"
         className="w-12 h-12 rounded-full object-cover cursor-pointer"
+        onClick={() => navigate("/user")}
       />
             </div>
           </div>
