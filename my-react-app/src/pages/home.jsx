@@ -11,16 +11,15 @@ export default function Home() {
   const navigate = useNavigate();
 
   function toggleLike(id) {
-    setItems((prev) =>
-      prev.map((x) => (x.id === id ? { ...x, liked: !x.liked } : x))
-    );
+    setItems((prev) => prev.map((x) => (x.id === id ? { ...x, liked: !x.liked } : x)));
   }
 
   async function handleContinue(file) {
     try {
-      const analysis = await analyzeTrashImage(file);
-      console.log("Analysis received from backend:", analysis);
+      // clear old idea history for new upload
+      sessionStorage.removeItem("upcycling_ideas");
 
+      const analysis = await analyzeTrashImage(file);
       const preview = await fileToDataUrl(file);
 
       sessionStorage.setItem("trash_analysis", JSON.stringify(analysis));
@@ -51,20 +50,11 @@ export default function Home() {
         </div>
 
         <div className="w-[90%] h-[30%] mb-8 border-2 border-gray-300 shadow-lg rounded-3xl">
-          <Upload
-            multiple={false}
-            maxFiles={1}
-            accept="image/*"
-            onContinue={handleContinue}
-          />
+          <Upload multiple={false} maxFiles={1} accept="image/*" onContinue={handleContinue} />
         </div>
 
         <div className="w-[90%] h-[80%]">
-          <BentoGrid
-            items={items}
-            categories={CATEGORIES}
-            onToggleLike={toggleLike}
-          />
+          <BentoGrid items={items} categories={CATEGORIES} onToggleLike={toggleLike} />
         </div>
       </div>
     </div>

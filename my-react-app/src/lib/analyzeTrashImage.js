@@ -1,23 +1,29 @@
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3001";
+const BACKEND = "http://localhost:3001";
 
 export async function analyzeTrashImage(file) {
-  const form = new FormData();
-  form.append("file", file);
+  const fd = new FormData();
+  fd.append("file", file);
 
-  const res = await fetch(`${API_BASE}/analyze`, {
+  const r = await fetch(`${BACKEND}/analyze`, {
     method: "POST",
-    body: form,
+    body: fd,
   });
 
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
+  if (!r.ok) {
+    const txt = await r.text();
+    throw new Error(txt || "Analyze failed");
+  }
+
+  const data = await r.json();
+  if (data?.error) throw new Error(data.error);
+  return data;
 }
 
 export function fileToDataUrl(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = () => resolve(reader.result); // data:image/...;base64,...
-    reader.onerror = reject;
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error("Failed to read file"));
     reader.readAsDataURL(file);
   });
 }
