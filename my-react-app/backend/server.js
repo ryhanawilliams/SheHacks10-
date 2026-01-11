@@ -3,6 +3,8 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import multer from "multer";
+import crypto from "crypto";
+import { createClient } from "@supabase/supabase-js";
 
 const app = express();
 
@@ -26,11 +28,91 @@ function makeId() {
   return Math.random().toString(16).slice(2) + Date.now().toString(16);
 }
 
+// ---------------- Supabase (Admin / Service Role) ----------------
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const SUPABASE_BUCKET = process.env.SUPABASE_BUCKET || "tutorial-images";
+
+const SUPABASE_ENABLED = Boolean(SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY);
+
+const supabaseAdmin = SUPABASE_ENABLED
+  ? createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+      auth: { persistSession: false },
+    })
+  : null;
+
+function parseDataUrl(dataUrl) {
+  const match = String(dataUrl || "").match(/^data:(.+);base64,(.+)$/);
+  if (!match) return null;
+  return { contentType: match[1], base64: match[2] };
+}
+
+function extFromContentType(contentType = "") {
+  const ct = contentType.toLowerCase();
+  if (ct.includes("png")) return "png";
+  if (ct.includes("webp")) return "webp";
+  if (ct.includes("jpeg") || ct.includes("jpg")) return "jpg";
+  return "png";
+}
+
+async function fetchToBuffer(url) {
+  const r = await fetch(url);
+  if (!r.ok)
+    throw new Error(`Failed to fetch image URL: ${r.status} ${await r.text()}`);
+  const contentType = r.headers.get("content-type") || "image/png";
+  const arrayBuffer = await r.arrayBuffer();
+  return { buffer: Buffer.from(arrayBuffer), contentType };
+}
+
+/**
+ * Uploads either:
+ * - data URL: data:image/png;base64,...
+ * - http(s) URL
+ * Returns: { publicUrl, path }
+ */
+async function uploadImageToSupabase({ source, basePath }) {
+  if (!SUPABASE_ENABLED) return { publicUrl: source || "", path: "" };
+  if (!source) return { publicUrl: "", path: "" };
+
+  let buffer;
+  let contentType;
+
+  const parsed = parseDataUrl(source);
+  if (parsed) {
+    contentType = parsed.contentType || "image/png";
+    buffer = Buffer.from(parsed.base64, "base64");
+  } else if (/^https?:\/\//i.test(source)) {
+    const fetched = await fetchToBuffer(source);
+    buffer = fetched.buffer;
+    contentType = fetched.contentType;
+  } else {
+    // Unknown format; just return as-is so you can debug
+    return { publicUrl: source, path: "" };
+  }
+
+  const ext = extFromContentType(contentType);
+  const path = `${basePath}.${ext}`;
+
+  const { error: uploadError } = await supabaseAdmin.storage
+    .from(SUPABASE_BUCKET)
+    .upload(path, buffer, { contentType, upsert: true });
+
+  if (uploadError) throw uploadError;
+
+  const { data: urlData } = supabaseAdmin.storage
+    .from(SUPABASE_BUCKET)
+    .getPublicUrl(path);
+  return { publicUrl: urlData.publicUrl, path };
+}
+
 // ---------------- OpenRouter helpers ----------------
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 
 function stripJsonFence(s = "") {
-  return s.replace(/```json\s*/g, "").replace(/```\s*/g, "").trim();
+  return s
+    .replace(/```json\s*/g, "")
+    .replace(/```\s*/g, "")
+    .trim();
 }
 
 async function openRouter(body) {
@@ -71,7 +153,13 @@ function pickImageDataUrl(orJson) {
 
 // ---------------- Prompt builders ----------------
 
-function buildStepImagePrompt({ craftTitle, itemName, stepNumber, step, globalStyleSeed }) {
+function buildStepImagePrompt({
+  craftTitle,
+  itemName,
+  stepNumber,
+  step,
+  globalStyleSeed,
+}) {
   const stepTitle = step?.title || "";
   const intro = (step?.intro || "").trim();
   const bullets = Array.isArray(step?.bullets) ? step.bullets : [];
@@ -125,14 +213,19 @@ Return only the generated image.
 `.trim();
 }
 
-function buildMaterialsImagePrompt({ itemName, materialHints = [], globalStyleSeed }) {
-  const cleanHints = [...new Set(materialHints.map((s) => String(s).trim()).filter(Boolean))].slice(
-    0,
-    10
-  );
+function buildMaterialsImagePrompt({
+  itemName,
+  materialHints = [],
+  globalStyleSeed,
+}) {
+  const cleanHints = [
+    ...new Set(materialHints.map((s) => String(s).trim()).filter(Boolean)),
+  ].slice(0, 10);
 
   const hintLine = cleanHints.length
-    ? `Include these materials/tools if they make sense: ${cleanHints.join(", ")}.`
+    ? `Include these materials/tools if they make sense: ${cleanHints.join(
+        ", "
+      )}.`
     : `Include a few basic craft tools: scissors, ruler, glue, tape.`;
 
   return `
@@ -165,7 +258,12 @@ Return only the generated image.
 const PORT = Number(process.env.PORT || 4000);
 
 app.get("/health", (_req, res) => {
-  res.json({ ok: true, port: PORT, time: Date.now() });
+  res.json({
+    ok: true,
+    port: PORT,
+    time: Date.now(),
+    supabaseEnabled: SUPABASE_ENABLED,
+  });
 });
 
 app.post("/api/sessions", (_req, res) => {
@@ -185,7 +283,9 @@ app.post("/api/upload", (req, res) => {
   upload.single("file")(req, res, (err) => {
     if (err) {
       console.error("MULTER ERROR:", err);
-      return res.status(400).json({ error: "Upload failed", details: err.message });
+      return res
+        .status(400)
+        .json({ error: "Upload failed", details: err.message });
     }
 
     const sessionId = req.query.session;
@@ -196,13 +296,16 @@ app.post("/api/upload", (req, res) => {
       mime: req.file?.mimetype,
     });
 
-    if (!sessionId) return res.status(400).json({ error: "Missing session query" });
+    if (!sessionId)
+      return res.status(400).json({ error: "Missing session query" });
 
     const s = sessions.get(sessionId);
     if (!s) return res.status(404).json({ error: "Session not found" });
 
     if (!req.file)
-      return res.status(400).json({ error: "Missing file (field name must be 'file')" });
+      return res
+        .status(400)
+        .json({ error: "Missing file (field name must be 'file')" });
 
     const mime = req.file.mimetype || "image/jpeg";
     const base64 = req.file.buffer.toString("base64");
@@ -235,7 +338,8 @@ Identify what this trash item is for upcycling.
 `.trim();
 
     const json = await openRouter({
-      model: "openai/gpt-4o-mini",
+      // ORIGINAL (slower but better): model: "openai/gpt-4o-mini",
+      model: "google/gemini-flash-1.5", // FASTER & CHEAPER alternative (supports vision)
       temperature: 0.2,
       messages: [
         {
@@ -255,7 +359,9 @@ Identify what this trash item is for upcycling.
       return res.json(JSON.parse(content));
     } catch (e) {
       console.error("JSON parse error:", e.message, "Raw content:", content);
-      return res.status(500).json({ error: "Failed to parse analysis response", raw: content });
+      return res
+        .status(500)
+        .json({ error: "Failed to parse analysis response", raw: content });
     }
   } catch (e) {
     console.error("Analyze endpoint error:", e);
@@ -322,12 +428,15 @@ Notes:
 `.trim();
 
     const ideaJson = await openRouter({
-      model: "google/gemini-3-flash-preview",
+      // ORIGINAL (slower but better): model: "google/gemini-3-flash-preview",
+      model: "google/gemini-flash-1.5", // FASTER & CHEAPER alternative
       temperature: 0.7,
       messages: [{ role: "user", content: prompt }],
     });
 
-    const ideaText = stripJsonFence(ideaJson?.choices?.[0]?.message?.content || "");
+    const ideaText = stripJsonFence(
+      ideaJson?.choices?.[0]?.message?.content || ""
+    );
     let idea;
     try {
       idea = JSON.parse(ideaText);
@@ -350,18 +459,20 @@ Notes:
       });
     }
 
-    // 2) Generate HERO image (Nano Banana / Gemini 3 Pro Image Preview)
+    // 2) Generate HERO image
     const heroImgJson = await openRouter({
-      model: "google/gemini-3-pro-image-preview",
+      // ORIGINAL (slower but better): model: "google/gemini-3-pro-image-preview",
+      model: "black-forest-labs/flux-schnell", // MUCH FASTER alternative (2-4 sec)
       modalities: ["image", "text"],
       temperature: 0.7,
       messages: [{ role: "user", content: imagePrompt }],
     });
-    const heroImageDataUrl = pickImageDataUrl(heroImgJson);
+    const heroImageSource = pickImageDataUrl(heroImgJson);
 
-    // 3) Generate MATERIALS/PREP image (flat-lay of main materials/tools)
+    // 3) Generate MATERIALS/PREP image (flat-lay)
     const tutorialMaterialBullets =
-      idea?.tutorial?.materials?.sections?.flatMap((s) => s?.bullets || []) || [];
+      idea?.tutorial?.materials?.sections?.flatMap((s) => s?.bullets || []) ||
+      [];
 
     const materialHints = [
       analysis.item_name,
@@ -369,7 +480,7 @@ Notes:
       ...tutorialMaterialBullets,
     ];
 
-    let materialsImageDataUrl = "";
+    let materialsImageSource = "";
     try {
       const materialsPrompt = buildMaterialsImagePrompt({
         itemName: analysis.item_name,
@@ -378,7 +489,8 @@ Notes:
       });
 
       const materialsImgJson = await openRouter({
-        model: "google/gemini-3-pro-image-preview",
+        // ORIGINAL (slower but better): model: "google/gemini-3-pro-image-preview",
+        model: "black-forest-labs/flux-schnell", // MUCH FASTER alternative (2-4 sec)
         modalities: ["image", "text"],
         temperature: 0.7,
         messages: [
@@ -387,7 +499,6 @@ Notes:
             content: trashImageDataUrl
               ? [
                   { type: "text", text: materialsPrompt },
-                  // Reference the uploaded item so the main item matches
                   { type: "image_url", image_url: { url: trashImageDataUrl } },
                 ]
               : materialsPrompt,
@@ -395,13 +506,18 @@ Notes:
         ],
       });
 
-      materialsImageDataUrl = pickImageDataUrl(materialsImgJson) || "";
+      materialsImageSource = pickImageDataUrl(materialsImgJson) || "";
     } catch (e) {
-      console.error("Materials image generation failed:", e?.message || String(e));
+      console.error(
+        "Materials image generation failed:",
+        e?.message || String(e)
+      );
     }
 
     // 4) Generate STEP images for EVERY step
-    const baseSteps = Array.isArray(idea.tutorial.steps) ? idea.tutorial.steps : [];
+    const baseSteps = Array.isArray(idea.tutorial.steps)
+      ? idea.tutorial.steps
+      : [];
     const stepImagesByIndex = new Map();
 
     for (let idx = 0; idx < baseSteps.length; idx++) {
@@ -418,7 +534,8 @@ Notes:
 
       try {
         const stepImgJson = await openRouter({
-          model: "google/gemini-3-pro-image-preview",
+          // ORIGINAL (slower but better): model: "google/gemini-3-pro-image-preview",
+          model: "black-forest-labs/flux-schnell", // MUCH FASTER alternative (2-4 sec)
           modalities: ["image", "text"],
           temperature: 0.7,
           messages: [
@@ -427,16 +544,18 @@ Notes:
               content: trashImageDataUrl
                 ? [
                     { type: "text", text: stepPrompt },
-                    // Reference the uploaded item so the object stays consistent across steps
-                    { type: "image_url", image_url: { url: trashImageDataUrl } },
+                    {
+                      type: "image_url",
+                      image_url: { url: trashImageDataUrl },
+                    },
                   ]
                 : stepPrompt,
             },
           ],
         });
 
-        const stepImageDataUrl = pickImageDataUrl(stepImgJson);
-        if (stepImageDataUrl) stepImagesByIndex.set(idx, stepImageDataUrl);
+        const stepImageSource = pickImageDataUrl(stepImgJson);
+        if (stepImageSource) stepImagesByIndex.set(idx, stepImageSource);
       } catch (e) {
         console.error("Step image generation failed:", {
           stepNumber,
@@ -445,13 +564,16 @@ Notes:
       }
     }
 
-    // 5) Build final tutorial payload
-    const id = makeId();
+    // 5) Build tutorial payload (still using "src" fields, but we'll replace with Storage URLs if enabled)
+    const tutorialId = SUPABASE_ENABLED ? crypto.randomUUID() : makeId();
 
     const tutorial = {
       ...idea.tutorial,
       title,
-      hero: { src: heroImageDataUrl || "", alt: idea.tutorial?.hero?.alt || title },
+      hero: {
+        src: heroImageSource || "",
+        alt: idea.tutorial?.hero?.alt || title,
+      },
       meta: {
         ...(idea.tutorial?.meta || {}),
         badgeLeft: "AI Generated Tutorial",
@@ -459,29 +581,84 @@ Notes:
       },
       materials: {
         ...(idea.tutorial?.materials || {}),
-        // IMPORTANT: first image beside materials/prep must be main materials used (flat-lay)
         image: {
-          src: materialsImageDataUrl || trashImageDataUrl || heroImageDataUrl || "",
+          src:
+            materialsImageSource || trashImageDataUrl || heroImageSource || "",
           alt: `Main materials for: ${analysis.item_name}`,
         },
       },
-      // IMPORTANT: every step must have an image now
       steps: baseSteps.map((s, idx) => {
         const stepNumber = idx + 1;
         return {
           ...s,
           image: {
-            src: stepImagesByIndex.get(idx) || heroImageDataUrl || "",
+            src: stepImagesByIndex.get(idx) || heroImageSource || "",
             alt: `Step ${stepNumber}: ${s.title}`,
           },
         };
       }),
     };
 
+    // 6) If Supabase enabled: upload images + replace src with public URLs + insert DB record
+    let heroPublicUrl = tutorial.hero.src;
+
+    if (SUPABASE_ENABLED) {
+      // hero
+      if (tutorial.hero?.src) {
+        const up = await uploadImageToSupabase({
+          source: tutorial.hero.src,
+          basePath: `${tutorialId}/hero`,
+        });
+        tutorial.hero.src = up.publicUrl;
+        heroPublicUrl = up.publicUrl;
+      }
+
+      // materials
+      if (tutorial.materials?.image?.src) {
+        const up = await uploadImageToSupabase({
+          source: tutorial.materials.image.src,
+          basePath: `${tutorialId}/materials`,
+        });
+        tutorial.materials.image.src = up.publicUrl;
+      }
+
+      // steps
+      for (let i = 0; i < tutorial.steps.length; i++) {
+        const src = tutorial.steps[i]?.image?.src;
+        if (!src) continue;
+
+        const up = await uploadImageToSupabase({
+          source: src,
+          basePath: `${tutorialId}/step-${i + 1}`,
+        });
+
+        tutorial.steps[i].image.src = up.publicUrl;
+      }
+
+      // insert tutorial row
+      const { error: insertError } = await supabaseAdmin
+        .from("tutorials")
+        .insert({
+          id: tutorialId,
+          title,
+          image_url: heroPublicUrl || "",
+          tutorial,
+        });
+
+      if (insertError) {
+        console.error("Supabase insert failed:", insertError);
+        return res
+          .status(500)
+          .json({ error: "Failed to save tutorial to Supabase" });
+      }
+    }
+
+    // 7) respond (keep your old response shape, but imageDataUrl may now be a normal URL)
     return res.json({
-      id,
+      id: tutorialId,
       title,
-      imageDataUrl: heroImageDataUrl || "",
+      imageDataUrl: heroPublicUrl || tutorial.hero.src || "",
+      imageUrl: heroPublicUrl || tutorial.hero.src || "",
       tutorial,
     });
   } catch (e) {
@@ -500,6 +677,7 @@ app.use((err, _req, res, _next) => {
 const server = app.listen(PORT, "0.0.0.0", () => {
   console.log(`Backend: http://localhost:${PORT}`);
   console.log(`Listening on 0.0.0.0:${PORT}`);
+  console.log(`Supabase enabled: ${SUPABASE_ENABLED}`);
 });
 
 server.on("error", (err) => {
