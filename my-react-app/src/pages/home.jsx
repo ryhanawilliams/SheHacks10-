@@ -8,13 +8,12 @@ import { ITEMS, CATEGORIES } from "../data/items.jsx";
 import { analyzeTrashImage, fileToDataUrl } from "../lib/analyzeTrashImage";
 import { supabase } from "../lib/supabaseClient";
 import { useUserProfile } from "../hooks/useUserProfile";
-import defaultPfp from "../assets/pfp.png";
 
 export default function Home() {
   const [items, setItems] = useState(ITEMS);
   const [qrOpen, setQrOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState(""); 
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const navigate = useNavigate();
   const { profile } = useUserProfile();
 
@@ -127,12 +126,6 @@ export default function Home() {
           className="w-8 h-8 hover:cursor-pointer hover:opacity-90 duration-500"
           onClick={() => navigate("/")}
         />
-        <img
-          src="/Heart4.png"
-          alt="likes"
-          className="w-8 h-8 hover:cursor-pointer hover:opacity-90 duration-500"
-          onClick={() => navigate("/user")}
-        />
       </div>
       <div className="w-[95%] h-full flex flex-col items-center overflow-y-auto">
         {/* Top bar */}
@@ -144,12 +137,11 @@ export default function Home() {
           <div className="w-[10%] h-full flex items-center justify-end mr-4">
             <div className="flex flex-end items-center space-x-2">
               <img
-                src={profile?.avatar_url || defaultPfp}
+                src={profile?.avatar_url || "/pfp.png"}
                 alt="User avatar"
-                className="w-12 h-12 rounded-full object-cover cursor-pointer border-2 border-gray-200 hover:border-purple-400 transition-all duration-300"
+                className="w-12 h-12 rounded-full object-cover cursor-pointer border-2 border-gray-200 hover:border-[#EF6589] transition-all duration-300"
                 onClick={() => navigate("/user")}
-                
-                />
+              />
             </div>
           </div>
         </div>

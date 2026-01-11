@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
+import HeartUnliked from "../assets/Heart.png";
+import HeartLiked from "../assets/Heart2.png";
 
 export default function LikeButton({ tutorialId }) {
   const [liked, setLiked] = useState(false);
@@ -47,13 +49,16 @@ export default function LikeButton({ tutorialId }) {
   };
 
   return (
-    <button onClick={toggle} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+    <button
+      onClick={toggle}
+      className="transition-transform hover:scale-110"
+      aria-label={liked ? "Unlike" : "Like"}
+    >
       <img
-        src={liked ? "/assets/Heart2.png" : "/assets/Heart1.png"}
-        alt={liked ? "Liked" : "Like"}
-        style={{ width: 18, height: 18, verticalAlign: "middle" }}
+        src={liked ? HeartLiked : HeartUnliked}
+        alt={liked ? "Liked" : "Unliked"}
+        className="w-6 h-6 object-contain"
       />
-      {liked ? "Liked" : "Like"}
     </button>
   );
 }

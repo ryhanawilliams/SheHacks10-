@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useUserProfile } from "../hooks/useUserProfile";
 import { supabase } from "../lib/supabaseClient";
 import ProfilePictureUpload from "../components/ProfilePictureUpload";
+import LikeButton from "../components/LikeButton";
 import { ITEMS } from "../data/items.jsx";
 
 export default function Profile() {
@@ -157,7 +158,6 @@ export default function Profile() {
           alert("Error saving name: " + error.message);
         }
       } else {
-        alert("✅ Name saved successfully!");
         setIsEditing(false);
         refetch(); // Refresh the profile data
       }
@@ -222,15 +222,14 @@ export default function Profile() {
                     type="text"
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
-                    className="text-3xl font-bold text-black text-center px-4 py-2 border-2 border-purple-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600"
-                    placeholder="Enter your name"
+                    className="text-3xl font-bold text-black text-center px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-gray-300"
                     autoFocus
                   />
                   <div className="flex gap-3">
                     <button
                       onClick={handleSave}
                       disabled={saving}
-                      className="px-6 py-2 bg-gradient-to-r from-purple-500 to-purple-700 text-white font-semibold rounded-lg hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-6 py-2 bg-[#EF6589] text-white font-semibold rounded-lg hover:opacity-90 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {saving ? "Saving..." : "Save"}
                     </button>
@@ -250,7 +249,7 @@ export default function Profile() {
                   </h1>
                   <button
                     onClick={handleEditClick}
-                    className="text-purple-600 hover:text-purple-800 transition-colors duration-300"
+                    className="text-black hover:text-black transition-colors duration-300"
                     title="Edit name"
                   >
                     <svg
@@ -302,9 +301,14 @@ export default function Profile() {
 
         {/* Liked Tutorials Section */}
         <div className="w-full max-w-6xl px-8 pb-16 mt-12">
-          <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">
-            ❤️ Liked Tutorials
-          </h2>
+          <div className="w-full mb-6">
+            <div className="flex items-center justify-start px-1 pb-2 pt-1">
+              <div className="relative whitespace-nowrap text-lg font-bold text-zinc-900">
+                Liked
+                <span className="absolute -bottom-2 left-0 right-0 h-[2px] w-full rounded-full bg-zinc-900" />
+              </div>
+            </div>
+          </div>
           {loadingLikes ? (
             <div className="text-center text-gray-600">Loading...</div>
           ) : likedTutorials.length === 0 ? (
@@ -318,7 +322,7 @@ export default function Profile() {
               </p>
               <Link
                 to="/"
-                className="inline-block px-8 py-3 bg-gradient-to-r from-purple-500 to-purple-700 text-white font-semibold rounded-lg hover:shadow-lg transition-all duration-300"
+                className="inline-block px-8 py-3 bg-[#EF6589] text-white font-semibold rounded-lg hover:opacity-90 transition-all duration-300"
               >
                 Browse Tutorials
               </Link>
@@ -326,40 +330,59 @@ export default function Profile() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {likedTutorials.map((tutorial) => (
-                <Link
+                <div
                   key={tutorial.id}
-                  to={`/tutorial/${tutorial.id}`}
-                  className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-2 flex flex-col"
+                  className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-2 flex flex-col relative"
                 >
-                  {/* Image */}
-                  <div className="relative w-full h-56 overflow-hidden">
-                    <img
-                      src={tutorial.src}
-                      alt={tutorial.title}
-                      className="w-full h-full object-cover"
-                    />
-                    {/* Category Badge */}
-                    <div className="absolute top-3 left-3 bg-purple-600 text-white px-3 py-1 rounded-lg text-sm font-semibold">
-                      {tutorial.category}
+                  <Link
+                    to={`/tutorial/${tutorial.id}`}
+                    className="flex flex-col flex-1"
+                  >
+                    {/* Image */}
+                    <div className="relative w-full h-56 overflow-hidden">
+                      <img
+                        src={tutorial.src}
+                        alt={tutorial.title}
+                        className="w-full h-full object-cover"
+                      />
+                      {/* Category Badge */}
+                      <div className="absolute top-3 left-3 bg-[#EF6589] text-white px-3 py-1 rounded-lg text-sm font-semibold">
+                        {tutorial.category}
+                      </div>
                     </div>
-                    {/* Like Badge */}
-                    <div className="absolute top-3 right-3 bg-white p-2 rounded-full shadow-md">
-                      ❤️
-                    </div>
-                  </div>
 
-                  {/* Content */}
-                  <div className="p-5">
-                    <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2">
-                      {tutorial.title}
-                    </h3>
-                    {tutorial.tutorial?.meta?.readTime && (
-                      <p className="text-sm text-gray-600">
-                        ⏱️ {tutorial.tutorial.meta.readTime}
-                      </p>
-                    )}
+                    {/* Content */}
+                    <div className="p-5">
+                      <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2">
+                        {tutorial.title}
+                      </h3>
+                      {tutorial.tutorial?.meta?.readTime && (
+                        <p className="text-sm text-gray-600">
+                          ⏱️ {tutorial.tutorial.meta.readTime}
+                        </p>
+                      )}
+                    </div>
+                  </Link>
+
+                  {/* Like Button */}
+                  <div
+                    className="absolute top-3 right-3 p-2 hover:cursor-pointer z-10"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}
+                  >
+                    <div
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // Reload liked tutorials after unlike
+                        setTimeout(() => loadLikedTutorials(), 500);
+                      }}
+                    >
+                      <LikeButton tutorialId={tutorial.id} />
+                    </div>
                   </div>
-                </Link>
+                </div>
               ))}
             </div>
           )}
