@@ -74,10 +74,10 @@ export default function TutorialPage() {
 
   return (
     <div>
-      <div className="mx-auto max-w-4xl px-4 py-4">
+      <div className="mx-auto mt-4 max-w-4xl px-4 py-4">
         <Link
           to="/"
-          className="text-sm font-semibold text-zinc-700 hover:text-zinc-900"
+          className="text-sm font-semibold text-zinc-600 hover:text-zinc-900"
         >
           ← Back to Home
         </Link>

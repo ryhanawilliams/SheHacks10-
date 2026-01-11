@@ -66,8 +66,18 @@ export default function Home() {
     <div className="flex flex-row w-full h-full">
       <div className="w-[5%] h-full border-r-2 border-gray-300 flex flex-col items-center justify-start py-16 gap-12">
         <img src="/circl.png" alt="logo" className="w-8 h-8" />
-        <img src="/Icon.png" alt="Home" className="w-8 h-8 hover:cursor-pointer hover:opacity-90 duration-500" onClick={() => navigate("/")}/>
-        <img src="/Heart4.png" alt="likes" className="w-8 h-8 hover:cursor-pointer hover:opacity-90 duration-500" onClick={() => navigate("/user")}/>
+        <img
+          src="/Icon.png"
+          alt="Home"
+          className="w-8 h-8 hover:cursor-pointer hover:opacity-90 duration-500"
+          onClick={() => navigate("/")}
+        />
+        <img
+          src="/Heart4.png"
+          alt="likes"
+          className="w-8 h-8 hover:cursor-pointer hover:opacity-90 duration-500"
+          onClick={() => navigate("/user")}
+        />
       </div>
       <div className="w-[95%] h-full flex flex-col items-center overflow-y-auto">
         {/* Top bar */}
@@ -78,12 +88,12 @@ export default function Home() {
 
           <div className="w-[10%] h-full flex items-center justify-end mr-4">
             <div className="flex flex-end items-center space-x-2">
-            <img
-        src="/avatar.jpeg" // put this in /public or replace with URL
-        alt="User avatar"
-        className="w-12 h-12 rounded-full object-cover cursor-pointer"
-        onClick={() => navigate("/user")}
-      />
+              <img
+                src="/avatar.jpeg" // put this in /public or replace with URL
+                alt="User avatar"
+                className="w-12 h-12 rounded-full object-cover cursor-pointer"
+                onClick={() => navigate("/user")}
+              />
             </div>
           </div>
         </div>
@@ -93,13 +103,16 @@ export default function Home() {
           <div className="w-[90%] mb-6 animate-in fade-in slide-in-from-top-4 duration-1000">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredItems.map((item) => (
-                <div
+                <button
                   key={item.id}
-                  className="border-2 border-gray-300 rounded-lg p-4 shadow hover:shadow-lg transition-shadow"
+                  onClick={() =>
+                    navigate(`/tutorial/${item.id}`, { state: { idea: item } })
+                  }
+                  className="border-2 border-gray-300 rounded-lg p-4 shadow hover:shadow-lg transition-shadow cursor-pointer text-left"
                 >
                   <h3 className="font-semibold text-lg mb-2">{item.title}</h3>
                   <p className="text-gray-600 text-sm">{item.category}</p>
-                </div>
+                </button>
               ))}
             </div>
           </div>
