@@ -1,3 +1,4 @@
+// server.js
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
@@ -5,17 +6,18 @@ import multer from "multer";
 
 const app = express();
 
+// ---- basics ----
 app.use((req, _res, next) => {
   console.log("REQ:", req.method, req.url);
   next();
 });
 
 app.use(cors());
-app.use(express.json({ limit: "15mb" })); // ✅ needed for POST /generate-idea
+app.use(express.json({ limit: "20mb" })); // base64 image data URLs can be big
 
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024 },
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
 });
 
 // ---- QR session store (in memory) ----
@@ -23,59 +25,6 @@ const sessions = new Map();
 function makeId() {
   return Math.random().toString(16).slice(2) + Date.now().toString(16);
 }
-
-app.get("/health", (req, res) => {
-  res.json({ ok: true, port: 4000, time: Date.now() });
-});
-
-app.post("/api/sessions", (req, res) => {
-  const sessionId = makeId();
-  sessions.set(sessionId, { latest: null });
-  console.log("SESSION CREATED:", sessionId);
-  res.json({ sessionId });
-});
-
-app.get("/api/sessions/:sessionId", (req, res) => {
-  const s = sessions.get(req.params.sessionId);
-  if (!s) return res.status(404).json({ error: "Session not found" });
-  res.json({ latest: s.latest });
-});
-
-app.post("/api/upload", (req, res) => {
-  upload.single("file")(req, res, (err) => {
-    if (err) {
-      console.error("MULTER ERROR:", err);
-      return res
-        .status(400)
-        .json({ error: "Upload failed", details: err.message });
-    }
-
-    const sessionId = req.query.session;
-    console.log("UPLOAD HIT:", {
-      session: sessionId,
-      hasFile: !!req.file,
-      size: req.file?.size,
-      mime: req.file?.mimetype,
-    });
-
-    if (!sessionId)
-      return res.status(400).json({ error: "Missing session query" });
-
-    const s = sessions.get(sessionId);
-    if (!s) return res.status(404).json({ error: "Session not found" });
-
-    if (!req.file)
-      return res
-        .status(400)
-        .json({ error: "Missing file (field name must be 'file')" });
-
-    const mime = req.file.mimetype || "image/jpeg";
-    const base64 = req.file.buffer.toString("base64");
-    s.latest = `data:${mime};base64,${base64}`;
-
-    return res.json({ ok: true });
-  });
-});
 
 // ---------------- OpenRouter helpers ----------------
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
@@ -106,18 +55,162 @@ async function openRouter(body) {
   try {
     return JSON.parse(text);
   } catch {
-    throw new Error(`OpenRouter returned non-JSON:\n${text.slice(0, 200)}`);
+    throw new Error(`OpenRouter returned non-JSON:\n${text.slice(0, 400)}`);
   }
 }
 
 function pickImageDataUrl(orJson) {
-  // OpenRouter image generation: message.images[0].image_url.url is the normalized form
-  const url =
+  // Normalized OpenRouter image output:
+  // choices[0].message.images[0].image_url.url
+  return (
     orJson?.choices?.[0]?.message?.images?.[0]?.image_url?.url ||
     orJson?.choices?.[0]?.message?.images?.[0]?.imageUrl?.url ||
-    "";
-  return url;
+    ""
+  );
 }
+
+// ---------------- Prompt builders ----------------
+
+function buildStepImagePrompt({ craftTitle, itemName, stepNumber, step, globalStyleSeed }) {
+  const stepTitle = step?.title || "";
+  const intro = (step?.intro || "").trim();
+  const bullets = Array.isArray(step?.bullets) ? step.bullets : [];
+  const notes = Array.isArray(step?.notes) ? step.notes : [];
+
+  const bulletsBlock = bullets.length
+    ? bullets.map((b, i) => `- ${i + 1}. ${b}`).join("\n")
+    : `- Depict the key action implied by the title/intro in a beginner-friendly way.`;
+
+  const notesBlock = notes.length
+    ? notes.map((n) => `- ${n}`).join("\n")
+    : `- Keep tools minimal and only what is necessary for the action.`;
+
+  return `
+Create ONE photorealistic instructional step image for an upcycling tutorial.
+
+Overall craft (final project): "${craftTitle}"
+Primary starting item (must visually match): "${itemName}"
+
+You are illustrating Step ${stepNumber}. The image MUST show the in-progress state of this step (not a finished glamour shot unless the step is explicitly finishing).
+
+Step ${stepNumber} title: "${stepTitle}"
+Step ${stepNumber} description: "${intro}"
+
+Exact actions to visually depict (must match these instructions precisely):
+${bulletsBlock}
+
+Safety + realism:
+- Beginner-friendly tools only (scissors, craft knife + cutting mat, glue, tape, ruler, marker, small brush, sandpaper).
+- No dangerous/industrial tools, no fire/flames, no harsh chemicals.
+- If cutting is implied: show a cutting mat and safe hand placement.
+
+Composition + clarity:
+- Photorealistic, natural indoor daylight.
+- Clean neutral workspace: light wood or white tabletop.
+- Close-up / medium close-up focusing on hands + item + relevant tools.
+- Hands in frame demonstrating the action; no face visible.
+- No text, no labels, no watermarks, no logos, no UI overlays.
+- Single image, sharp focus on the key action, minimal clutter.
+
+Consistency across all step images:
+- Maintain a consistent camera angle and tabletop style across steps.
+- Keep the object recognizable and consistent in shape/color.
+- Keep lighting consistent.
+${globalStyleSeed ? `- Global style seed: ${globalStyleSeed}` : ""}
+
+Extra constraints / tips (include if relevant):
+${notesBlock}
+
+Return only the generated image.
+`.trim();
+}
+
+function buildMaterialsImagePrompt({ itemName, materialHints = [], globalStyleSeed }) {
+  const cleanHints = [...new Set(materialHints.map((s) => String(s).trim()).filter(Boolean))].slice(
+    0,
+    10
+  );
+
+  const hintLine = cleanHints.length
+    ? `Include these materials/tools if they make sense: ${cleanHints.join(", ")}.`
+    : `Include a few basic craft tools: scissors, ruler, glue, tape.`;
+
+  return `
+Create ONE photorealistic "materials flat-lay" image for an upcycling tutorial.
+
+Main item (must be central and clearly visible): "${itemName}"
+
+Scene:
+- Overhead flat-lay on a clean neutral white or light wood tabletop.
+- The main item is placed in the center.
+- Surround it neatly with the primary materials and beginner craft tools needed (organized, minimal clutter).
+- No hands necessary.
+
+Requirements:
+- Photorealistic, natural indoor daylight.
+- No text, no labels, no watermarks, no logos, no UI overlays.
+- Crisp focus, clean composition, realistic textures.
+
+Consistency:
+- Match the same tabletop + lighting style used for the step images.
+${globalStyleSeed ? `- Global style seed: ${globalStyleSeed}` : ""}
+
+${hintLine}
+
+Return only the generated image.
+`.trim();
+}
+
+// -------------------- health + QR session routes --------------------
+const PORT = Number(process.env.PORT || 4000);
+
+app.get("/health", (_req, res) => {
+  res.json({ ok: true, port: PORT, time: Date.now() });
+});
+
+app.post("/api/sessions", (_req, res) => {
+  const sessionId = makeId();
+  sessions.set(sessionId, { latest: null });
+  console.log("SESSION CREATED:", sessionId);
+  res.json({ sessionId });
+});
+
+app.get("/api/sessions/:sessionId", (req, res) => {
+  const s = sessions.get(req.params.sessionId);
+  if (!s) return res.status(404).json({ error: "Session not found" });
+  res.json({ latest: s.latest });
+});
+
+app.post("/api/upload", (req, res) => {
+  upload.single("file")(req, res, (err) => {
+    if (err) {
+      console.error("MULTER ERROR:", err);
+      return res.status(400).json({ error: "Upload failed", details: err.message });
+    }
+
+    const sessionId = req.query.session;
+    console.log("UPLOAD HIT:", {
+      session: sessionId,
+      hasFile: !!req.file,
+      size: req.file?.size,
+      mime: req.file?.mimetype,
+    });
+
+    if (!sessionId) return res.status(400).json({ error: "Missing session query" });
+
+    const s = sessions.get(sessionId);
+    if (!s) return res.status(404).json({ error: "Session not found" });
+
+    if (!req.file)
+      return res.status(400).json({ error: "Missing file (field name must be 'file')" });
+
+    const mime = req.file.mimetype || "image/jpeg";
+    const base64 = req.file.buffer.toString("base64");
+    s.latest = `data:${mime};base64,${base64}`;
+
+    return res.json({ ok: true });
+  });
+});
 
 // -------------------- /analyze --------------------
 app.post("/analyze", upload.single("file"), async (req, res) => {
@@ -162,9 +255,7 @@ Identify what this trash item is for upcycling.
       return res.json(JSON.parse(content));
     } catch (e) {
       console.error("JSON parse error:", e.message, "Raw content:", content);
-      return res
-        .status(500)
-        .json({ error: "Failed to parse analysis response", raw: content });
+      return res.status(500).json({ error: "Failed to parse analysis response", raw: content });
     }
   } catch (e) {
     console.error("Analyze endpoint error:", e);
@@ -173,12 +264,9 @@ Identify what this trash item is for upcycling.
 });
 
 // -------------------- /generate-idea --------------------
-// Uses:
-// - Tutorial text: google/gemini-3-flash-preview :contentReference[oaicite:5]{index=5}
-// - Image: google/gemini-3-pro-image-preview (Nano Banana Pro) :contentReference[oaicite:6]{index=6}
 app.post("/generate-idea", async (req, res) => {
   try {
-    const { analysis, previousTitles } = req.body || {};
+    const { analysis, previousTitles, trashImageDataUrl } = req.body || {};
     if (!analysis?.item_name) {
       return res.status(400).json({ error: "Missing analysis.item_name" });
     }
@@ -188,9 +276,12 @@ app.post("/generate-idea", async (req, res) => {
       ? `Avoid repeating these titles: ${prev.map((t) => `"${t}"`).join(", ")}.`
       : "";
 
-    // 1) Generate tutorial JSON + an image prompt (Gemini 3 Flash Preview)
+    // A tiny seed to encourage consistent style across materials + steps
+    const globalStyleSeed = `same tabletop + lighting; consistent camera angle; clean neutral background; realistic craft photography`;
+
+    // 1) Generate tutorial JSON + image_prompt (text model)
     const prompt = `
-You are generating ONE upcycling idea for a hackathon app.
+You are generating ONE upcycling tutorial for a hackathon app.
 
 TRASH ITEM (from image analysis):
 - item_name: ${analysis.item_name}
@@ -259,38 +350,138 @@ Notes:
       });
     }
 
-    // 2) Generate the image (Nano Banana Pro / Gemini 3 Pro Image Preview)
-    // IMPORTANT: modalities must include "image" so OpenRouter returns an image data URL :contentReference[oaicite:7]{index=7}
-    const imgJson = await openRouter({
+    // 2) Generate HERO image (Nano Banana / Gemini 3 Pro Image Preview)
+    const heroImgJson = await openRouter({
       model: "google/gemini-3-pro-image-preview",
       modalities: ["image", "text"],
       temperature: 0.7,
       messages: [{ role: "user", content: imagePrompt }],
     });
+    const heroImageDataUrl = pickImageDataUrl(heroImgJson);
 
-    const imageDataUrl = pickImageDataUrl(imgJson);
+    // 3) Generate MATERIALS/PREP image (flat-lay of main materials/tools)
+    const tutorialMaterialBullets =
+      idea?.tutorial?.materials?.sections?.flatMap((s) => s?.bullets || []) || [];
 
-    // 3) Fill TutorialLayout-required image fields using the generated image
+    const materialHints = [
+      analysis.item_name,
+      ...(Array.isArray(analysis.materials) ? analysis.materials : []),
+      ...tutorialMaterialBullets,
+    ];
+
+    let materialsImageDataUrl = "";
+    try {
+      const materialsPrompt = buildMaterialsImagePrompt({
+        itemName: analysis.item_name,
+        materialHints,
+        globalStyleSeed,
+      });
+
+      const materialsImgJson = await openRouter({
+        model: "google/gemini-3-pro-image-preview",
+        modalities: ["image", "text"],
+        temperature: 0.7,
+        messages: [
+          {
+            role: "user",
+            content: trashImageDataUrl
+              ? [
+                  { type: "text", text: materialsPrompt },
+                  // Reference the uploaded item so the main item matches
+                  { type: "image_url", image_url: { url: trashImageDataUrl } },
+                ]
+              : materialsPrompt,
+          },
+        ],
+      });
+
+      materialsImageDataUrl = pickImageDataUrl(materialsImgJson) || "";
+    } catch (e) {
+      console.error("Materials image generation failed:", e?.message || String(e));
+    }
+
+    // 4) Generate STEP images for EVERY step
+    const baseSteps = Array.isArray(idea.tutorial.steps) ? idea.tutorial.steps : [];
+    const stepImagesByIndex = new Map();
+
+    for (let idx = 0; idx < baseSteps.length; idx++) {
+      const stepNumber = idx + 1;
+      const step = baseSteps[idx];
+
+      const stepPrompt = buildStepImagePrompt({
+        craftTitle: title,
+        itemName: analysis.item_name,
+        stepNumber,
+        step,
+        globalStyleSeed,
+      });
+
+      try {
+        const stepImgJson = await openRouter({
+          model: "google/gemini-3-pro-image-preview",
+          modalities: ["image", "text"],
+          temperature: 0.7,
+          messages: [
+            {
+              role: "user",
+              content: trashImageDataUrl
+                ? [
+                    { type: "text", text: stepPrompt },
+                    // Reference the uploaded item so the object stays consistent across steps
+                    { type: "image_url", image_url: { url: trashImageDataUrl } },
+                  ]
+                : stepPrompt,
+            },
+          ],
+        });
+
+        const stepImageDataUrl = pickImageDataUrl(stepImgJson);
+        if (stepImageDataUrl) stepImagesByIndex.set(idx, stepImageDataUrl);
+      } catch (e) {
+        console.error("Step image generation failed:", {
+          stepNumber,
+          err: e?.message || String(e),
+        });
+      }
+    }
+
+    // 5) Build final tutorial payload
     const id = makeId();
+
     const tutorial = {
       ...idea.tutorial,
-      title: title,
-      hero: { src: imageDataUrl || "", alt: idea.tutorial?.hero?.alt || title },
-      materials: {
-        ...idea.tutorial.materials,
-        image: { src: imageDataUrl || "", alt: "Finished craft" },
+      title,
+      hero: { src: heroImageDataUrl || "", alt: idea.tutorial?.hero?.alt || title },
+      meta: {
+        ...(idea.tutorial?.meta || {}),
+        badgeLeft: "AI Generated Tutorial",
+        readTime: idea.tutorial?.meta?.readTime || "5-minute craft",
       },
-      steps: (idea.tutorial.steps || []).map((s, idx) => ({
-        ...s,
-        // Optional: show the same image on even steps so the alternating layout displays images
-        image: idx % 2 === 1 ? { src: imageDataUrl || "", alt: s.title } : undefined,
-      })),
+      materials: {
+        ...(idea.tutorial?.materials || {}),
+        // IMPORTANT: first image beside materials/prep must be main materials used (flat-lay)
+        image: {
+          src: materialsImageDataUrl || trashImageDataUrl || heroImageDataUrl || "",
+          alt: `Main materials for: ${analysis.item_name}`,
+        },
+      },
+      // IMPORTANT: every step must have an image now
+      steps: baseSteps.map((s, idx) => {
+        const stepNumber = idx + 1;
+        return {
+          ...s,
+          image: {
+            src: stepImagesByIndex.get(idx) || heroImageDataUrl || "",
+            alt: `Step ${stepNumber}: ${s.title}`,
+          },
+        };
+      }),
     };
 
     return res.json({
       id,
       title,
-      imageDataUrl: imageDataUrl || "",
+      imageDataUrl: heroImageDataUrl || "",
       tutorial,
     });
   } catch (e) {
@@ -300,9 +491,26 @@ Notes:
 });
 
 // Error handling middleware (keep at the end)
-app.use((err, req, res, next) => {
+app.use((err, _req, res, _next) => {
   console.error("Server error:", err);
   res.status(500).json({ error: err.message || "Internal server error" });
 });
 
-app.listen(4000, "0.0.0.0", () => console.log("Backend on 0.0.0.0:4000"));
+// ---- start server ----
+const server = app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Backend: http://localhost:${PORT}`);
+  console.log(`Listening on 0.0.0.0:${PORT}`);
+});
+
+server.on("error", (err) => {
+  console.error("Server error:", err);
+  process.exit(1);
+});
+
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught exception:", err);
+});
+
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("Unhandled rejection at:", promise, "reason:", reason);
+});
