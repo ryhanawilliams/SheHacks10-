@@ -4,19 +4,93 @@ import cors from "cors";
 import multer from "multer";
 
 const app = express();
-app.use(cors({ origin: "http://localhost:5173" })); // Vite dev server
+
+app.use((req, _res, next) => {
+  console.log("REQ:", req.method, req.url);
+  next();
+});
+
+app.use(cors());
 
 const upload = multer({
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 },
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error("Server error:", err);
+  res.status(500).json({ error: err.message || "Internal server error" });
+});
+
+app.get("/health", (req, res) => {
+  res.json({ ok: true, port: 4000, time: Date.now() });
+});
+
+// ---- QR session store (in memory) ----
+const sessions = new Map();
+
+function makeId() {
+  return Math.random().toString(16).slice(2) + Date.now().toString(16);
+}
+
+app.post("/api/sessions", (req, res) => {
+  const sessionId = makeId();
+  sessions.set(sessionId, { latest: null });
+  console.log("SESSION CREATED:", sessionId);
+  res.json({ sessionId });
+});
+
+app.get("/api/sessions/:sessionId", (req, res) => {
+  const s = sessions.get(req.params.sessionId);
+  if (!s) return res.status(404).json({ error: "Session not found" });
+  res.json({ latest: s.latest });
+});
+
+app.post("/api/upload", (req, res) => {
+  upload.single("file")(req, res, (err) => {
+    if (err) {
+      console.error("MULTER ERROR:", err);
+      return res.status(400).json({ error: "Upload failed", details: err.message });
+    }
+
+    const sessionId = req.query.session;
+    console.log("UPLOAD HIT:", {
+      session: sessionId,
+      hasFile: !!req.file,
+      size: req.file?.size,
+      mime: req.file?.mimetype,
+    });
+
+    if (!sessionId) return res.status(400).json({ error: "Missing session query" });
+
+    const s = sessions.get(sessionId);
+    if (!s) return res.status(404).json({ error: "Session not found" });
+
+    if (!req.file) return res.status(400).json({ error: "Missing file (field name must be 'file')" });
+
+    const mime = req.file.mimetype || "image/jpeg";
+    const base64 = req.file.buffer.toString("base64");
+    s.latest = `data:${mime};base64,${base64}`;
+
+    return res.json({ ok: true });
+  });
 });
 
 app.post("/analyze", upload.single("file"), async (req, res) => {
   try {
-    if (!req.file) return res.status(400).send("Missing file");
+    if (!req.file) {
+      return res.status(400).json({ error: "Missing file" });
+    }
 
     const mime = req.file.mimetype || "image/jpeg";
     const base64 = req.file.buffer.toString("base64");
     const dataUrl = `data:${mime};base64,${base64}`;
+
+    if (!process.env.OPENROUTER_API_KEY) {
+      console.error("OPENROUTER_API_KEY is not set");
+      return res.status(500).json({ error: "Server configuration error: API key missing" });
+    }
 
     const prompt = `
 Return STRICT JSON only.
@@ -36,7 +110,7 @@ Identify what this trash item is for upcycling.
       headers: {
         Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
         "Content-Type": "application/json",
-        "HTTP-Referer": "http://localhost:5173",
+        "HTTP-Referer": process.env.PUBLIC_BASE_URL || "http://localhost:5173",
         "X-Title": "Hackathon Upcycler",
       },
       body: JSON.stringify({
@@ -57,33 +131,23 @@ Identify what this trash item is for upcycling.
     if (!r.ok) {
       const errorText = await r.text();
       console.error("OpenRouter API error:", r.status, errorText);
-      return res.status(500).send(errorText);
+      return res.status(500).json({ error: "Failed to analyze image", details: errorText });
     }
 
     const json = await r.json();
     let content = json?.choices?.[0]?.message?.content || "";
-    console.log("AI Response content:", content);
+    content = content.replace(/```json\s*/g, "").replace(/```\s*/g, "").trim();
 
-    // Strip markdown code blocks if present
-    content = content
-      .replace(/```json\s*/g, "")
-      .replace(/```\s*/g, "")
-      .trim();
-    console.log("After stripping markdown:", content);
-
-    let parsed;
     try {
-      parsed = JSON.parse(content);
-      console.log("Parsed successfully:", parsed);
+      return res.json(JSON.parse(content));
     } catch (e) {
-      console.error("JSON parse error:", e.message);
-      return res.status(200).json({ error: "Bad JSON", raw: content });
+      console.error("JSON parse error:", e.message, "Raw content:", content);
+      return res.status(500).json({ error: "Failed to parse analysis response", raw: content });
     }
-
-    res.json(parsed);
   } catch (e) {
-    res.status(500).send(e?.message || "Server error");
+    console.error("Analyze endpoint error:", e);
+    return res.status(500).json({ error: e?.message || "Server error" });
   }
 });
 
-app.listen(3001, () => console.log("Backend: http://localhost:3001"));
+app.listen(4000, "0.0.0.0", () => console.log("Backend on 0.0.0.0:4000"));

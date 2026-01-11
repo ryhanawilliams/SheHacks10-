@@ -6,6 +6,8 @@ import Tutorial from "./pages/tutorial.jsx";
 import Upload from "./pages/upload.jsx";
 import History from "./pages/history.jsx";
 import Results from "./pages/results.jsx";
+import CapturePage from "./pages/CapturePage.jsx";
+
 
 function App() {
   return (
@@ -17,6 +19,7 @@ function App() {
         <Route path="/results" element={<Results />} />
         <Route path="/upload" element={<Upload />} />
         <Route path="/history" element={<History />} />
+        <Route path="/capture" element={<CapturePage />} />
       </Routes>
     </Router>
   );
