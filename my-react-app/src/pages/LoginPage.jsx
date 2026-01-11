@@ -32,11 +32,11 @@ export default function LoginPage() {
         '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
     },
     card: {
-      width: "min(820px, 92vw)",
+      width: "min(600px, 92vw)",
       background: "#fff",
       borderRadius: 20,
       boxShadow: "0 18px 55px rgba(0,0,0,0.12)",
-      padding: "56px 64px",
+      padding: "56px 32px",
       boxSizing: "border-box",
       textAlign: "center",
     },
@@ -92,7 +92,7 @@ export default function LoginPage() {
       transition: "all 0.15s ease",
     },
     button: {
-      marginTop: 30,
+      marginTop: 10,
       height: 64,
       borderRadius: 12,
       border: "none",
