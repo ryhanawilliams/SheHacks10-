@@ -1,17 +1,17 @@
-import tanktop from "../assets/tanktop.png";
-import appleShelf from "../assets/apple.png";
-import bookmark from "../assets/bookmark.png";
-import glass from "../assets/jar.png";
-import scrap from "../assets/hearts.png";
-import bottle from "../assets/planter.png";
-import jean from "../assets/wallet.png";
-import vase from "../assets/vase.png";
-import earrings from "../assets/earrings.png";
-import cd from "../assets/cd.png";
-import watch from "../assets/watch earrings.png";
-import table from "../assets/table.png";
-import sprinkler from "../assets/sprinkler.png";
-import lights from "../assets/lights.png";
+import tanktop from "../assets/tanktop.jpg";
+import appleShelf from "../assets/apple.jpg";
+import bookmark from "../assets/bookmark.jpg";
+import glass from "../assets/jar.jpg";
+import scrap from "../assets/hearts.jpg";
+import bottle from "../assets/planter.jpg";
+import jean from "../assets/wallet.jpg";
+import vase from "../assets/vase.jpg";
+import earrings from "../assets/earrings.jpg";
+import cd from "../assets/cd.jpg";
+import watch from "../assets/watch earrings.jpg";
+import table from "../assets/table.jpg";
+import sprinkler from "../assets/sprinkler.jpg";
+import lights from "../assets/lights.jpg";
 
 export const CATEGORIES = [
   "All",
