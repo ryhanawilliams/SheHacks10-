@@ -338,8 +338,7 @@ Identify what this trash item is for upcycling.
 `.trim();
 
     const json = await openRouter({
-      // ORIGINAL (slower but better): model: "openai/gpt-4o-mini",
-      model: "google/gemini-flash-1.5", // FASTER & CHEAPER alternative (supports vision)
+      model: "openai/gpt-4o-mini",
       temperature: 0.2,
       messages: [
         {
@@ -428,8 +427,7 @@ Notes:
 `.trim();
 
     const ideaJson = await openRouter({
-      // ORIGINAL (slower but better): model: "google/gemini-3-flash-preview",
-      model: "google/gemini-flash-1.5", // FASTER & CHEAPER alternative
+      model: "google/gemini-3-flash-preview",
       temperature: 0.7,
       messages: [{ role: "user", content: prompt }],
     });
@@ -461,8 +459,7 @@ Notes:
 
     // 2) Generate HERO image
     const heroImgJson = await openRouter({
-      // ORIGINAL (slower but better): model: "google/gemini-3-pro-image-preview",
-      model: "black-forest-labs/flux-schnell", // MUCH FASTER alternative (2-4 sec)
+      model: "google/gemini-3-pro-image-preview",
       modalities: ["image", "text"],
       temperature: 0.7,
       messages: [{ role: "user", content: imagePrompt }],
@@ -489,8 +486,7 @@ Notes:
       });
 
       const materialsImgJson = await openRouter({
-        // ORIGINAL (slower but better): model: "google/gemini-3-pro-image-preview",
-        model: "black-forest-labs/flux-schnell", // MUCH FASTER alternative (2-4 sec)
+        model: "google/gemini-3-pro-image-preview",
         modalities: ["image", "text"],
         temperature: 0.7,
         messages: [
@@ -534,8 +530,7 @@ Notes:
 
       try {
         const stepImgJson = await openRouter({
-          // ORIGINAL (slower but better): model: "google/gemini-3-pro-image-preview",
-          model: "black-forest-labs/flux-schnell", // MUCH FASTER alternative (2-4 sec)
+          model: "google/gemini-3-pro-image-preview",
           modalities: ["image", "text"],
           temperature: 0.7,
           messages: [

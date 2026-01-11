@@ -3,12 +3,19 @@ import { supabase } from "../lib/supabaseClient";
 
 /**
  * Custom hook to get the current user's profile information
- * Returns: { profile, loading, error, refetch }
+ * Returns: { profile, loading, error, refetch, userId }
+ *
+ * Profile object includes:
+ * - id: user ID
+ * - name: display name
+ * - avatar_url: profile picture URL (null if using default)
+ * - created_at, updated_at: timestamps
  */
 export function useUserProfile() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [userId, setUserId] = useState(null);
 
   const fetchProfile = async () => {
     try {
@@ -20,13 +27,16 @@ export function useUserProfile() {
 
       if (!user) {
         setProfile(null);
+        setUserId(null);
         setLoading(false);
         return;
       }
 
+      setUserId(user.id);
+
       const { data, error: profileError } = await supabase
         .from("profiles")
-        .select("*")
+        .select("id, name, avatar_url, created_at, updated_at")
         .eq("id", user.id)
         .maybeSingle();
 
@@ -75,5 +85,5 @@ export function useUserProfile() {
     };
   }, []);
 
-  return { profile, loading, error, refetch: fetchProfile };
+  return { profile, loading, error, refetch: fetchProfile, userId };
 }

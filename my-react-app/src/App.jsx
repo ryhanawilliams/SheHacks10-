@@ -9,7 +9,6 @@ import Results from "./pages/results.jsx";
 import CapturePage from "./pages/CapturePage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import RequireAuth from "./components/RequireAuth.jsx";
-import Likes from "./pages/LikedTutorials.jsx";
 
 function App() {
   return (
@@ -69,14 +68,6 @@ function App() {
           element={
             <RequireAuth>
               <CapturePage />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/likes"
-          element={
-            <RequireAuth>
-              <Likes />
             </RequireAuth>
           }
         />

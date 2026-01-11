@@ -1,16 +1,19 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import pfpImage from "/pfp.png";
 import { useUserProfile } from "../hooks/useUserProfile";
 import { supabase } from "../lib/supabaseClient";
+import ProfilePictureUpload from "../components/ProfilePictureUpload";
+import { ITEMS } from "../data/items.jsx";
 
 export default function Profile() {
-  const { profile, loading, refetch } = useUserProfile();
+  const { profile, loading, refetch, userId } = useUserProfile();
   const [email, setEmail] = React.useState("");
   const [isEditing, setIsEditing] = React.useState(false);
   const [newName, setNewName] = React.useState("");
   const [saving, setSaving] = React.useState(false);
   const [loggingOut, setLoggingOut] = React.useState(false);
+  const [likedTutorials, setLikedTutorials] = React.useState([]);
+  const [loadingLikes, setLoadingLikes] = React.useState(true);
   const navigate = useNavigate();
 
   React.useEffect(() => {
@@ -28,6 +31,82 @@ export default function Profile() {
       setNewName(profile.name);
     }
   }, [profile]);
+
+  React.useEffect(() => {
+    const loadLikedTutorials = async () => {
+      const { data: userRes } = await supabase.auth.getUser();
+      const user = userRes.user;
+      if (!user) {
+        setLoadingLikes(false);
+        return;
+      }
+
+      try {
+        // Get all liked tutorial IDs for this user
+        const { data, error } = await supabase
+          .from("likes")
+          .select("tutorial_id")
+          .eq("user_id", user.id);
+
+        if (error) {
+          console.error("Error fetching likes:", error);
+          setLoadingLikes(false);
+          return;
+        }
+
+        const likedIds = (data ?? []).map((like) => like.tutorial_id);
+
+        if (likedIds.length === 0) {
+          setLikedTutorials([]);
+          setLoadingLikes(false);
+          return;
+        }
+
+        const allTutorials = [];
+
+        // 1. Get hardcoded tutorials that are liked
+        const hardcodedLiked = ITEMS.filter((item) =>
+          likedIds.includes(item.id)
+        );
+        allTutorials.push(...hardcodedLiked);
+
+        // 2. Get generated tutorials from database
+        const hardcodedIds = ITEMS.map((item) => item.id);
+        const generatedIds = likedIds.filter(
+          (id) => !hardcodedIds.includes(id)
+        );
+
+        if (generatedIds.length > 0) {
+          const { data: dbTutorials, error: tutError } = await supabase
+            .from("tutorials")
+            .select("*")
+            .in("id", generatedIds);
+
+          if (tutError) {
+            console.error("Error fetching generated tutorials:", tutError);
+          } else if (dbTutorials) {
+            const formattedDbTutorials = dbTutorials.map((tut) => ({
+              id: tut.id,
+              title: tut.title,
+              src: tut.image_url,
+              category: "Generated",
+              liked: true,
+              tutorial: tut.tutorial,
+            }));
+            allTutorials.push(...formattedDbTutorials);
+          }
+        }
+
+        setLikedTutorials(allTutorials);
+      } catch (err) {
+        console.error("Unexpected error loading liked tutorials:", err);
+      } finally {
+        setLoadingLikes(false);
+      }
+    };
+
+    loadLikedTutorials();
+  }, []);
 
   const handleEditClick = () => {
     setNewName(profile?.name || "");
@@ -123,21 +202,16 @@ export default function Profile() {
             className="w-8 h-8 hover:cursor-pointer hover:opacity-90 duration-500"
           />
         </Link>
-        <Link to="/likes">
-          <img
-            src="/Heart4.png"
-            alt="likes"
-            className="w-8 h-8 hover:cursor-pointer hover:opacity-90 duration-500"
-          />
-        </Link>
       </div>
       <div className="w-[95%] h-full flex flex-col items-center overflow-y-auto bg-[#f5f5f5]">
         <div className="flex flex-col items-center justify-center pt-16 mt-16">
-          <img
-            src={pfpImage}
-            alt="Profile"
-            className="w-48 h-48 rounded-full object-cover mb-6"
-          />
+          <div className="mb-6">
+            <ProfilePictureUpload
+              currentAvatarUrl={profile?.avatar_url}
+              userId={userId}
+              onUploadComplete={refetch}
+            />
+          </div>
           {loading ? (
             <h1 className="text-3xl font-bold text-black mb-1">Loading...</h1>
           ) : (
@@ -223,6 +297,71 @@ export default function Profile() {
                 {loggingOut ? "Logging out..." : "Logout"}
               </button>
             </>
+          )}
+        </div>
+
+        {/* Liked Tutorials Section */}
+        <div className="w-full max-w-6xl px-8 pb-16 mt-12">
+          <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">
+            ❤️ Liked Tutorials
+          </h2>
+          {loadingLikes ? (
+            <div className="text-center text-gray-600">Loading...</div>
+          ) : likedTutorials.length === 0 ? (
+            <div className="bg-white rounded-2xl p-12 text-center shadow-md">
+              <div className="text-6xl mb-4">💔</div>
+              <h3 className="text-2xl font-semibold text-gray-800 mb-2">
+                No liked tutorials yet
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Start exploring and like your favorite tutorials!
+              </p>
+              <Link
+                to="/"
+                className="inline-block px-8 py-3 bg-gradient-to-r from-purple-500 to-purple-700 text-white font-semibold rounded-lg hover:shadow-lg transition-all duration-300"
+              >
+                Browse Tutorials
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {likedTutorials.map((tutorial) => (
+                <Link
+                  key={tutorial.id}
+                  to={`/tutorial/${tutorial.id}`}
+                  className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-2 flex flex-col"
+                >
+                  {/* Image */}
+                  <div className="relative w-full h-56 overflow-hidden">
+                    <img
+                      src={tutorial.src}
+                      alt={tutorial.title}
+                      className="w-full h-full object-cover"
+                    />
+                    {/* Category Badge */}
+                    <div className="absolute top-3 left-3 bg-purple-600 text-white px-3 py-1 rounded-lg text-sm font-semibold">
+                      {tutorial.category}
+                    </div>
+                    {/* Like Badge */}
+                    <div className="absolute top-3 right-3 bg-white p-2 rounded-full shadow-md">
+                      ❤️
+                    </div>
+                  </div>
+
+                  {/* Content */}
+                  <div className="p-5">
+                    <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2">
+                      {tutorial.title}
+                    </h3>
+                    {tutorial.tutorial?.meta?.readTime && (
+                      <p className="text-sm text-gray-600">
+                        ⏱️ {tutorial.tutorial.meta.readTime}
+                      </p>
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </div>
           )}
         </div>
       </div>
