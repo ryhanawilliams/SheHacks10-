@@ -1,22 +1,26 @@
-const BACKEND = "http://localhost:3001";
+const API_BASE = import.meta.env.VITE_API_BASE || "";
 
 export async function analyzeTrashImage(file) {
   const fd = new FormData();
   fd.append("file", file);
 
-  const r = await fetch(`${BACKEND}/analyze`, {
-    method: "POST",
-    body: fd,
-  });
+  try {
+    const res = await fetch(`${API_BASE}/analyze`, {
+      method: "POST",
+      body: form,
+    });
 
-  if (!r.ok) {
-    const txt = await r.text();
-    throw new Error(txt || "Analyze failed");
+    if (!res.ok) {
+      const errorText = await res.text().catch(() => "");
+      throw new Error(errorText || `Server error: ${res.status} ${res.statusText}`);
+    }
+    return res.json();
+  } catch (error) {
+    if (error.message.includes("fetch")) {
+      throw new Error("Failed to connect to server. Make sure the backend is running on port 4000.");
+    }
+    throw error;
   }
-
-  const data = await r.json();
-  if (data?.error) throw new Error(data.error);
-  return data;
 }
 
 export function fileToDataUrl(file) {

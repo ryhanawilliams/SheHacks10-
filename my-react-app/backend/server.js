@@ -5,11 +5,76 @@ import multer from "multer";
 
 const app = express();
 
-app.use(cors({ origin: "http://localhost:5173" }));
-app.use(express.json({ limit: "15mb" })); // IMPORTANT for JSON request bodies
+app.use((req, _res, next) => {
+  console.log("REQ:", req.method, req.url);
+  next();
+});
+
+app.use(cors());
 
 const upload = multer({
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 },
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error("Server error:", err);
+  res.status(500).json({ error: err.message || "Internal server error" });
+});
+
+app.get("/health", (req, res) => {
+  res.json({ ok: true, port: 4000, time: Date.now() });
+});
+
+// ---- QR session store (in memory) ----
+const sessions = new Map();
+
+function makeId() {
+  return Math.random().toString(16).slice(2) + Date.now().toString(16);
+}
+
+app.post("/api/sessions", (req, res) => {
+  const sessionId = makeId();
+  sessions.set(sessionId, { latest: null });
+  console.log("SESSION CREATED:", sessionId);
+  res.json({ sessionId });
+});
+
+app.get("/api/sessions/:sessionId", (req, res) => {
+  const s = sessions.get(req.params.sessionId);
+  if (!s) return res.status(404).json({ error: "Session not found" });
+  res.json({ latest: s.latest });
+});
+
+app.post("/api/upload", (req, res) => {
+  upload.single("file")(req, res, (err) => {
+    if (err) {
+      console.error("MULTER ERROR:", err);
+      return res.status(400).json({ error: "Upload failed", details: err.message });
+    }
+
+    const sessionId = req.query.session;
+    console.log("UPLOAD HIT:", {
+      session: sessionId,
+      hasFile: !!req.file,
+      size: req.file?.size,
+      mime: req.file?.mimetype,
+    });
+
+    if (!sessionId) return res.status(400).json({ error: "Missing session query" });
+
+    const s = sessions.get(sessionId);
+    if (!s) return res.status(404).json({ error: "Session not found" });
+
+    if (!req.file) return res.status(400).json({ error: "Missing file (field name must be 'file')" });
+
+    const mime = req.file.mimetype || "image/jpeg";
+    const base64 = req.file.buffer.toString("base64");
+    s.latest = `data:${mime};base64,${base64}`;
+
+    return res.json({ ok: true });
+  });
 });
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
@@ -52,11 +117,18 @@ function makeId() {
 // -------------------- /analyze --------------------
 app.post("/analyze", upload.single("file"), async (req, res) => {
   try {
-    if (!req.file) return res.status(400).send("Missing file");
+    if (!req.file) {
+      return res.status(400).json({ error: "Missing file" });
+    }
 
     const mime = req.file.mimetype || "image/jpeg";
     const base64 = req.file.buffer.toString("base64");
     const dataUrl = `data:${mime};base64,${base64}`;
+
+    if (!process.env.OPENROUTER_API_KEY) {
+      console.error("OPENROUTER_API_KEY is not set");
+      return res.status(500).json({ error: "Server configuration error: API key missing" });
+    }
 
     const prompt = `
 Return STRICT JSON only.
@@ -71,147 +143,53 @@ Schema:
 Identify what this trash item is for upcycling.
 `.trim();
 
-    const json = await openRouter({
-      model: "openai/gpt-4o-mini",
-      temperature: 0.2,
-      messages: [
-        {
-          role: "user",
-          content: [
-            { type: "text", text: prompt },
-            { type: "image_url", image_url: { url: dataUrl } },
-          ],
-        },
-      ],
+    const r = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        "Content-Type": "application/json",
+        "HTTP-Referer": process.env.PUBLIC_BASE_URL || "http://localhost:5173",
+        "X-Title": "Hackathon Upcycler",
+      },
+      body: JSON.stringify({
+        model: "openai/gpt-4o-mini",
+        temperature: 0.2,
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "text", text: prompt },
+              { type: "image_url", image_url: { url: dataUrl } },
+            ],
+          },
+        ],
+      }),
     });
 
-    let content = json?.choices?.[0]?.message?.content || "";
-    content = stripJsonFence(content);
-
-    try {
-      return res.json(JSON.parse(content));
-    } catch {
-      return res.status(200).json({ error: "Bad JSON", raw: content });
+    if (!r.ok) {
+      const errorText = await r.text();
+      console.error("OpenRouter API error:", r.status, errorText);
+      return res.status(500).json({ error: "Failed to analyze image", details: errorText });
     }
   } catch (e) {
     res.status(500).json({ error: e?.message || "Server error" });
   }
 });
 
-// -------------------- /generate-idea (NEW) --------------------
-app.post("/generate-idea", async (req, res) => {
-  try {
-    const {
-      analysis,
-      trashImageDataUrl, // currently optional (you can use it later to ground ideas)
-      previousTitles = [],
-    } = req.body || {};
+    const json = await r.json();
+    let content = json?.choices?.[0]?.message?.content || "";
+    content = content.replace(/```json\s*/g, "").replace(/```\s*/g, "").trim();
 
-    if (!analysis?.item_name) {
-      return res.status(400).json({ error: "Missing analysis.item_name" });
-    }
-
-    const avoid =
-      Array.isArray(previousTitles) && previousTitles.length
-        ? `Avoid repeating these titles: ${previousTitles
-            .slice(0, 10)
-            .map((t) => `"${t}"`)
-            .join(", ")}.`
-        : "";
-
-    // 1) Generate ONE idea + tutorial JSON (text model)
-    const ideaPrompt = `
-Generate ONE upcycling idea for: ${analysis.item_name}
-Category: ${analysis.category || "Unknown"}
-Materials: ${(analysis.materials || []).join(", ") || "Unknown"}
-Notes: ${analysis.notes || "None"}
-
-${avoid}
-
-Return STRICT JSON only:
-{
-  "title": string,
-  "image_prompt": string,
-  "materials_sections": [
-    { "title": string, "bullets": string[] }
-  ],
-  "steps": [
-    { "title": string, "intro": string, "bullets": string[] }
-  ],
-  "meta": { "readTime": string }
-}
-
-Guidelines:
-- Beginner friendly and realistic.
-- 4–6 steps.
-- image_prompt should describe a clean product photo of the FINAL upcycled result.
-`.trim();
-
-    const ideaJson = await openRouter({
-      model: "google/gemini-2.5-pro",
-      temperature: 0.7,
-      messages: [{ role: "user", content: ideaPrompt }],
-    });
-
-    let ideaContent = ideaJson?.choices?.[0]?.message?.content || "";
-    ideaContent = stripJsonFence(ideaContent);
-
-    let idea;
     try {
-      idea = JSON.parse(ideaContent);
-    } catch {
-      return res.status(200).json({ error: "Bad idea JSON", raw: ideaContent });
+      return res.json(JSON.parse(content));
+    } catch (e) {
+      console.error("JSON parse error:", e.message, "Raw content:", content);
+      return res.status(500).json({ error: "Failed to parse analysis response", raw: content });
     }
-
-    // 2) Generate image with Nano Banana Pro (Gemini 3 Pro Image Preview)
-    const imagePrompt =
-      idea.image_prompt ||
-      `A clean product photo of a finished upcycled craft made from ${analysis.item_name}. Neutral background, good lighting.`;
-
-    const imgJson = await openRouter({
-      model: "google/gemini-3-pro-image-preview", // ✅ Nano Banana Pro
-      modalities: ["image", "text"], // ✅ required for image output
-      temperature: 0.7,
-      messages: [{ role: "user", content: imagePrompt }],
-    });
-
-    const imageDataUrl =
-      imgJson?.choices?.[0]?.message?.images?.[0]?.image_url?.url || "";
-
-    const id = makeId();
-
-    // Package into the shape your TutorialLayout can use
-    const tutorial = {
-      title: idea.title,
-      hero: { src: imageDataUrl, alt: idea.title },
-      meta: {
-        badgeLeft: "AI Generated Tutorial",
-        readTime: idea?.meta?.readTime || "5-minute craft",
-      },
-      materials: {
-        heading: "Preparation & Materials",
-        sections: (idea.materials_sections || []).map((s) => ({
-          title: s.title,
-          bullets: s.bullets || [],
-        })),
-        image: { src: imageDataUrl, alt: "Finished result" },
-      },
-      steps: (idea.steps || []).map((s) => ({
-        title: s.title,
-        intro: s.intro,
-        bullets: s.bullets || [],
-      })),
-    };
-
-    return res.json({
-      id,
-      title: idea.title,
-      imageDataUrl,
-      tutorial,
-    });
   } catch (e) {
+    console.error("Analyze endpoint error:", e);
     return res.status(500).json({ error: e?.message || "Server error" });
   }
 });
 
-app.listen(3001, () => console.log("Backend: http://localhost:3001"));
+app.listen(4000, "0.0.0.0", () => console.log("Backend on 0.0.0.0:4000"));
