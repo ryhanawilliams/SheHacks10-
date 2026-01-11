@@ -1,12 +1,24 @@
-// items.js
+import tanktop from "../assets/tanktop.png";
+import appleShelf from "../assets/apple.png";
+import bookmark from "../assets/bookmark.png";
+import glass from "../assets/jar.png";
+import scrap from "../assets/hearts.png";
+import bottle from "../assets/planter.png";
+import jean from "../assets/wallet.png";
+import vase from "../assets/vase.png";
+import earrings from "../assets/earrings.png";
+import cd from "../assets/cd.png";
+import watch from "../assets/watch earrings.png";
+import table from "../assets/table.png";
+import sprinkler from "../assets/sprinkler.png";
+import lights from "../assets/lights.png";
+
 export const CATEGORIES = [
   "All",
   "Fabric",
   "Bottles",
   "Boxes",
   "Wood",
-  "Paper",
-  "Tin",
   "Glass",
   "Scraps",
   "Misc.",
@@ -26,21 +38,21 @@ export const LAYOUT = {
   plasticVases: "md:[grid-column:1/span_5] md:[grid-row:5/span_3]",
   earringsGoogly: "md:[grid-column:6/span_4] md:[grid-row:4/span_2]",
   cd: "md:[grid-column:6/span_2] md:[grid-row:6/span_2]",
-  violinEarrings: "md:[grid-column5/span_2] md:[grid-row:6/span_2]",
+  violinEarrings: "md:[grid-column:8/span_2] md:[grid-row:6/span_2]",
 
-  vinylTableLeft: "md:[grid-column:1/span_4] md:[grid-row:8/span_3]",
-  vinylTableMid: "md:[grid-column:5/span_4] md:[grid-row:8/span_3]",
-  vinylTableRight: "md:[grid-column:9/span_4] md:[grid-row:6/span_5]",
+  plasticBottleSprinkler: "md:[grid-column:1/span_4] md:[grid-row:8/span_3]",
+  plasticBottleLights: "md:[grid-column:5/span_5] md:[grid-row:8/span_3]",
+  vinylCoffeeTable: "md:[grid-column:10/span_3] md:[grid-row:6/span_5]",
 };
 
 // Items derived from reference image
 export const ITEMS = [
   {
     id: "1",
-    title: "Fabric Spring Fruit Tote Tops",
+    title: "Fabric Scrap Fruit Tank Tops",
     category: "Fabric",
     liked: true,
-    src: "",
+    src: tanktop,
     layoutKey: "fabricTote",
   },
   {
@@ -48,7 +60,7 @@ export const ITEMS = [
     title: "Cardboard Apple Shelf",
     category: "Boxes",
     liked: false,
-    src: "",
+    src: appleShelf,
     layoutKey: "appleShelf",
   },
   {
@@ -56,7 +68,7 @@ export const ITEMS = [
     title: "Fabric Bookmark",
     category: "Fabric",
     liked: false,
-    src: "",
+    src: bookmark,
     layoutKey: "fabricBookmark",
   },
   {
@@ -64,7 +76,7 @@ export const ITEMS = [
     title: "Stamp Glass Jars",
     category: "Glass",
     liked: false,
-    src: "",
+    src: glass,
     layoutKey: "stampGlass",
   },
   {
@@ -72,7 +84,7 @@ export const ITEMS = [
     title: "Scrap Hearts",
     category: "Scraps",
     liked: false,
-    src: "",
+    src: scrap,
     layoutKey: "scrapHearts",
   },
   {
@@ -80,7 +92,7 @@ export const ITEMS = [
     title: "Planter Bottle",
     category: "Bottles",
     liked: true,
-    src: "",
+    src: bottle,
     layoutKey: "planterBottle",
   },
   {
@@ -88,15 +100,15 @@ export const ITEMS = [
     title: "Jean Wallet",
     category: "Fabric",
     liked: false,
-    src: "",
+    src: jean,
     layoutKey: "jeanWallet",
   },
   {
     id: "8",
-    title: "A-Plastic Can Vases",
+    title: "Artistic Can Vases",
     category: "Misc.",
     liked: false,
-    src: "",
+    src: vase,
     layoutKey: "plasticVases",
   },
   {
@@ -104,7 +116,7 @@ export const ITEMS = [
     title: "Bread Clip Googly Eye Earrings",
     category: "Misc.",
     liked: false,
-    src: "",
+    src: earrings,
     layoutKey: "earringsGoogly",
   },
   {
@@ -112,39 +124,39 @@ export const ITEMS = [
     title: "CD",
     category: "Misc.",
     liked: false,
-    src: "",
+    src: cd,
     layoutKey: "cd",
   },
   {
     id: "11",
-    title: "Violin Earrings",
+    title: "Watch Earrings",
     category: "Misc.",
     liked: true,
-    src: "",
+    src: watch,
     layoutKey: "violinEarrings",
   },
   {
     id: "12",
-    title: "Vinyl Coffee Table",
-    category: "Wood",
+    title: "Plastic Bottle Sprinkler",
+    category: "Bottles",
     liked: false,
-    src: "",
-    layoutKey: "vinylTableLeft",
+    src: sprinkler,
+    layoutKey: "plasticBottleSprinkler",
   },
   {
     id: "13",
     title: "Vinyl Coffee Table",
-    category: "Wood",
+    category: "Misc.",
     liked: true,
-    src: "",
-    layoutKey: "vinylTableMid",
+    src: table,
+    layoutKey: "vinylCoffeeTable",
   },
   {
     id: "14",
-    title: "Vinyl Coffee Table",
-    category: "Wood",
+    title: "Plastic Bottle Lights",
+    category: "Bottles",
     liked: false,
-    src: "",
-    layoutKey: "vinylTableRight",
+    src: lights,
+    layoutKey: "plasticBottleLights",
   },
 ];

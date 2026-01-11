@@ -111,7 +111,7 @@ export default function Home() {
         )}
 
         {/* Upload card */}
-        <div className="w-[90%] h-[90%] mb-8 border-2 border-gray-300 shadow-lg rounded-3xl flex justify-center">
+        <div className="w-[90%] h-[90%] mb-12 border-2 border-gray-300 shadow-lg rounded-3xl flex justify-center">
           <Upload
             multiple={false}
             maxFiles={1}
@@ -129,7 +129,7 @@ export default function Home() {
         />
 
         {/* Grid */}
-        <div className="w-[90%] h-[80%]">
+        <div className="w-[90%] h-[80%] mb-8">
           <BentoGrid
             items={items}
             categories={CATEGORIES}
