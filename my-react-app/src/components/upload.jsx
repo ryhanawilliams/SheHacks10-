@@ -185,7 +185,7 @@ export default function Upload({
             <button
               type="button"
               onClick={openPicker}
-              className="rounded-2xl px-4 py-2 text-sm font-semibold bg-black text-white hover:bg-zinc-800"
+              className="rounded-2xl px-4 py-2 text-sm font-semibold bg-[#EF6589] text-white hover:bg-[#E04F75]"
             >
               Choose file
             </button>
@@ -193,7 +193,7 @@ export default function Upload({
             <button
               type="button"
               onClick={() => onTakePhoto?.()}
-              className="rounded-2xl px-4 py-2 text-sm font-semibold bg-zinc-100 text-zinc-900 hover:bg-zinc-200"
+              className="rounded-2xl px-4 py-2 text-sm font-semibold bg-zinc-100 text-zinc-900 hover:bg-zinc-300"
             >
               Take a photo
             </button>
