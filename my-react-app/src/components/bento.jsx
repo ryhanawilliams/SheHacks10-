@@ -54,8 +54,8 @@ function BentoTile({ item, onToggleLike }) {
     <Link
       to={`/tutorial/${item.id}`}
       className={[
-        "group relative overflow-hidden rounded-2xl bg-zinc-200 shadow-sm",
-        "h-[160px] sm:h-[175px] md:h-auto",
+        "group relative block overflow-hidden rounded-2xl bg-zinc-200 shadow-sm",
+        "h-[160px] sm:h-[175px] md:h-full",
         placement,
       ].join(" ")}
     >
@@ -63,11 +63,11 @@ function BentoTile({ item, onToggleLike }) {
         <img
           src={item.src}
           alt={item.title || "Gallery item"}
-          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+          className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
           loading="lazy"
         />
       ) : (
-        <div className="grid h-full w-full place-items-center bg-gradient-to-br from-zinc-100 to-zinc-300 text-[11px] font-semibold text-zinc-600">
+        <div className="absolute inset-0 grid place-items-center bg-gradient-to-br from-zinc-100 to-zinc-300 text-[11px] font-semibold text-zinc-600">
           IMAGE
         </div>
       )}

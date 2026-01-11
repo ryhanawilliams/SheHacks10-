@@ -15,22 +15,22 @@ export const CATEGORIES = [
 // Bento layout perfectly matching reference image
 // Grid: 10 columns (4:3:3 ratio) × 10 rows (1:1 overall aspect ratio)
 export const LAYOUT = {
-  fabricTote: "md:[grid-column:1/span_2] md:[grid-row:1/span_4]",
-  appleShelf: "md:[grid-column:3/span_2] md:[grid-row:1/span_2]",
-  fabricBookmark: "md:[grid-column:3/span_2] md:[grid-row:3/span_2]",
-  stampGlass: "md:[grid-column:5/span_2] md:[grid-row:1/span_3]",
-  scrapHearts: "md:[grid-column:7/span_2] md:[grid-row:1/span_3]",
-  planterBottle: "md:[grid-column:9/span_2] md:[grid-row:1/span_2]",
-  jeanWallet: "md:[grid-column:9/span_2] md:[grid-row:3/span_2]",
+  fabricTote: "md:[grid-column:1/span_3] md:[grid-row:1/span_4]",
+  appleShelf: "md:[grid-column:4/span_2] md:[grid-row:1/span_2]",
+  fabricBookmark: "md:[grid-column:4/span_2] md:[grid-row:3/span_2]",
+  stampGlass: "md:[grid-column:6/span_2] md:[grid-row:1/span_3]",
+  scrapHearts: "md:[grid-column:8/span_2] md:[grid-row:1/span_3]",
+  planterBottle: "md:[grid-column:10/span_3] md:[grid-row:1/span_2]",
+  jeanWallet: "md:[grid-column:10/span_3] md:[grid-row:3/span_3]",
 
-  plasticVases: "md:[grid-column:1/span_4] md:[grid-row:5/span_3]",
-  earringsGoogly: "md:[grid-column:5/span_3] md:[grid-row:4/span_2]",
-  cd: "md:[grid-column:5/span_2] md:[grid-row:6/span_2]",
-  violinEarrings: "md:[grid-column:7/span_2] md:[grid-row:6/span_2]",
+  plasticVases: "md:[grid-column:1/span_5] md:[grid-row:5/span_3]",
+  earringsGoogly: "md:[grid-column:6/span_4] md:[grid-row:4/span_2]",
+  cd: "md:[grid-column:6/span_2] md:[grid-row:6/span_2]",
+  violinEarrings: "md:[grid-column5/span_2] md:[grid-row:6/span_2]",
 
-  vinylTableLeft: "md:[grid-column:1/span_3] md:[grid-row:8/span_3]",
-  vinylTableMid: "md:[grid-column:4/span_3] md:[grid-row:8/span_3]",
-  vinylTableRight: "md:[grid-column:7/span_4] md:[grid-row:8/span_3]",
+  vinylTableLeft: "md:[grid-column:1/span_4] md:[grid-row:8/span_3]",
+  vinylTableMid: "md:[grid-column:5/span_4] md:[grid-row:8/span_3]",
+  vinylTableRight: "md:[grid-column:9/span_4] md:[grid-row:6/span_5]",
 };
 
 // Items derived from reference image
