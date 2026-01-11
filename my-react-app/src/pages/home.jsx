@@ -52,9 +52,11 @@ export default function Home() {
 
           <div className="w-[10%] h-full flex items-center justify-end mr-4">
             <div className="flex flex-end items-center space-x-2">
-              <Link to="/user">
-                <div className="w-12 h-12 bg-gray-300 rounded-full cursor-pointer" />
-              </Link>
+            <img
+        src="/avatar.jpeg" // put this in /public or replace with URL
+        alt="User avatar"
+        className="w-12 h-12 rounded-full object-cover cursor-pointer"
+      />
             </div>
           </div>
         </div>
