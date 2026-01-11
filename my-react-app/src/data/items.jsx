@@ -4,6 +4,7 @@ import tanktop0 from "../assets/tanktop0.jpg";
 import tanktop1 from "../assets/tanktop1.jpg";
 import tanktop2 from "../assets/tanktop2.jpg";
 import tanktop3 from "../assets/tanktop3.jpg";
+
 import appleShelf from "../assets/apple.jpg";
 import apple0 from "../assets/apple0.jpg";
 import apple1 from "../assets/apple1.jpg";
@@ -67,8 +68,16 @@ import table0 from "../assets/table0.jpg";
 import table1 from "../assets/table1.jpg";
 import table2 from "../assets/table2.jpg";
 import table3 from "../assets/table3.jpg";
+import table4 from "../assets/table4.jpg";
+
 
 import sprinkler from "../assets/sprinkler.JPG";
+import sprinkler0 from "../assets/sprinkler0.JPG";
+import sprinkler1 from "../assets/sprinkler1.JPG";
+import sprinkler2 from "../assets/sprinkler2.JPG";
+import sprinkler3 from "../assets/sprinkler3.JPG";
+import sprinkler4 from "../assets/sprinkler4.JPG";
+
 
 import lights from "../assets/lights.jpg";
 import lights0 from "../assets/lights0.jpg";
@@ -654,66 +663,77 @@ export const ITEMS = [
     tutorial: {
       title: "Plastic Bottle Sprinkler",
       hero: { src: sprinkler, alt: "Plastic Bottle Sprinkler" },
-      meta: { badgeLeft: "AI Generated Tutorial", readTime: "10-minute project" },
+      meta: { badgeLeft: "AI Generated Tutorial", readTime: "10–15 minute garden craft" },
       materials: {
         heading: "Preparation & Materials",
         sections: [
           {
-            title: "Get Started",
-            body: "Turn an empty plastic bottle into a simple garden sprinkler that attaches to a hose or can be used with gravity-fed water.",
+            title: "Overview",
+            body: "Upcycle a plastic bottle into a simple DIY sprinkler for watering plants, lawns, or garden beds. Perfect for low-pressure hoses or quick backyard setups.",
           },
           {
             title: "Materials",
             bullets: [
               "Empty plastic bottle (1–2L works best)",
-              "Push pin, nail, or small drill",
-              "Garden hose or water source",
-              "Tape or hose adapter (optional)",
-              "Marker (optional)",
+              "Push pin, nail, awl, or small drill bit",
+              "Garden hose or gravity-fed water source",
+              "Waterproof tape or hose adapter (optional)",
+              "Marker (optional, for hole placement)",
             ],
           },
+          {
+            title: "Safety Tip",
+            body: "If using a nail or drill, work on a stable surface and keep hands clear. Make small holes first — you can always enlarge them later.",
+          },
+
         ],
+        image: { src: sprinkler0, alt: "Clean plastic bottle ready for sprinkler holes" },
+
       },
-      
+  
       steps: [
         {
-          title: "Clean and prepare the bottle",
-          intro: "Make sure your bottle is ready for reuse.",
+          title: "Clean and prep the bottle",
+          intro: "Start with a clean bottle so water flows evenly.",
           bullets: [
-            "Remove any labels",
-            "Rinse the bottle thoroughly",
-            "Let it dry completely",
+            "Remove labels and adhesive residue",
+            "Rinse thoroughly to remove any leftover liquid",
+            "Screw the cap on tightly",
           ],
-          image: { src: sprinkler, alt: "Clean plastic bottle" },
+          image: { src: sprinkler4, alt: "Clean plastic bottle ready for sprinkler holes" },
         },
         {
-          title: "Create sprinkler holes",
-          intro: "These holes will control the water spray.",
+          title: "Poke sprinkler holes",
+          intro: "These holes control the spray pattern and water pressure.",
           bullets: [
-            "Use a pin or nail to poke small holes around the bottle",
-            "Space holes evenly for balanced water flow",
-            "Avoid holes near the base to prevent leaks",
+            "Use a pin or nail to poke small holes around the sides of the bottle",
+            "Space holes evenly for consistent coverage",
+            "Avoid the bottom of the bottle to prevent uncontrolled leaking",
           ],
+          image: { src: sprinkler1, alt: "Clean plastic bottle ready for sprinkler holes" },
         },
         {
-          title: "Attach the water source",
-          intro: "Connect the bottle to water.",
+          title: "Connect the water source",
+          intro: "Set up the bottle so water can flow into it.",
           bullets: [
-            "Insert the hose into the bottle opening",
-            "Secure with tape or a hose adapter if needed",
-            "Test for leaks before use",
+            "Insert the garden hose into the bottle opening",
+            "Secure the connection with tape or a hose adapter if needed",
+            "For gravity use, fill the bottle with water and place it upside-down",
           ],
+          image: { src: sprinkler2, alt: "Clean plastic bottle ready for sprinkler holes" },
         },
         {
-          title: "Test and adjust",
+          title: "Test and fine-tune",
+          intro: "Adjust the sprinkler for your space.",
           bullets: [
-            "Turn on the water slowly",
-            "Observe spray direction and coverage",
-            "Add or enlarge holes if needed",
+            "Turn the water on slowly to avoid popping the holes",
+            "Check spray direction and coverage",
+            "Add more holes or slightly widen existing ones if needed"
           ],
+          image: { src: sprinkler3, alt: "Clean plastic bottle ready for sprinkler holes" },
         },
-      ],      
-    },
+      ],
+    },  
   },
   {
     id: "13",
@@ -738,6 +758,7 @@ export const ITEMS = [
             bullets: ["Old vinyl records", "Table base or legs", "Glass or clear top", "Adhesive", "Protective coating", "Measuring tools"],
           },
         ],
+        image: { src: table4, alt: "Arrangement step" },
       },
       steps: [
         {
@@ -777,75 +798,78 @@ export const ITEMS = [
     tutorial: {
       title: "Plastic Bottle Lights",
       hero: { src: lights, alt: "Plastic Bottle Lights" },
-      meta: { badgeLeft: "AI Generated Tutorial", readTime: "2-hour project" },
+      meta: { badgeLeft: "AI Generated Tutorial", readTime: "30–60 minute craft" },
       materials: {
         heading: "Preparation & Materials",
         sections: [
           {
-            title: "Get Started",
-            body: "Turn discarded plastic bottles into decorative lights or lanterns for indoor or outdoor spaces.",
+            title: "Overview",
+            body: "Turn clear plastic bottles into glowing lanterns using LED lights. Great for cozy room decor, patios, or party string lights.",
           },
           {
             title: "Materials",
             bullets: [
-              "Clear plastic bottles (1–2L)",
-              "LED string lights or LED bulbs",
+              "Clear plastic bottles (1–2L work best)",
+              "LED fairy lights or battery tea lights (avoid heat-producing bulbs)",
               "Scissors or craft knife",
-              "Marker (optional)",
-              "Decorative paint or paper (optional)",
-              "Tape or glue",
+              "Painter’s tape or masking tape",
+              "Marker (optional, for guidelines)",
+              "Decor: acrylic paint, tissue paper, stickers, or washi tape (optional)",
+              "Sandpaper or nail file (optional, to smooth edges)",
             ],
           },
+          {
+            title: "Safety Note",
+            body: "Use LEDs only (no incandescent bulbs). If you’re using a craft knife, cut on a stable surface and keep fingers clear of the blade.",
+          },
         ],
-        image: { src: lights0, alt: "Final assembly" },
-
+        image: { src: lights0, alt: "Plastic bottle lights overview" },
       },
-      
+  
       steps: [
         {
-          title: "Clean and prep the bottles",
-          intro: "Prepare the bottles for cutting and decorating.",
+          title: "Wash and prep the bottles",
+          intro: "Start with clean, dry bottles so decorations stick properly.",
           bullets: [
-            "Remove labels and rinse bottles",
-            "Dry completely",
-            "Mark cut lines if shaping the bottle",
+            "Remove labels and glue residue (warm soapy water helps)",
+            "Rinse and dry completely",
+            "Decide the shape: lantern sleeve, cut-out pattern, or full bottle glow",
           ],
-          image: { src: lights1, alt: "Final assembly" },
-
+          image: { src: lights1, alt: "Clean plastic bottles ready to craft" },
         },
         {
-          title: "Cut and shape the bottles",
-          intro: "Create openings or patterns for the light to shine through.",
+          title: "Cut openings or patterns",
+          intro: "Create windows or slits so light can shine through.",
           bullets: [
-            "Cut the bottom or sides of the bottle",
-            "Create simple slits or patterns",
-            "Smooth rough edges carefully",
+            "For a lantern sleeve: cut off the bottom, then cut vertical slits up the sides",
+            "For cut-outs: draw shapes (stars, dots, waves) and carefully cut them out",
+            "Lightly file or tape sharp edges if needed",
           ],
-          image: { src: lights2, alt: "Final assembly" },
-
+          image: { src: lights2, alt: "Cutting and shaping the bottles" },
         },
         {
-          title: "Decorate the bottles",
-          intro: "Add personality to your lights.",
+          title: "Decorate the bottle lantern",
+          intro: "Make it cute — this is where the style comes in.",
           bullets: [
-            "Paint or wrap bottles with decorative material",
-            "Leave clear sections for light diffusion",
-            "Let paint or glue dry fully",
+            "Paint patterns (polka dots, gradients, florals) or wrap with tissue paper for a frosted look",
+            "Leave some clear areas so the light glows through",
+            "Let everything dry fully before adding lights",
           ],
-          image: { src: lights3, alt: "Final assembly" },
-
+          image: { src: lights3, alt: "Decorating the bottle lantern" },
         },
         {
-          title: "Insert the lights",
+          title: "Add the lights and finish",
+          intro: "Install the LEDs and set it up for display.",
           bullets: [
-            "Place LED lights inside each bottle",
-            "Secure lights so they don’t move",
-            "Test lights before final placement",
+            "Thread fairy lights inside the bottle (or place a battery tea light at the base)",
+            "Secure the battery pack/cable with tape so it doesn’t pull",
+            "Optional: add a handle (string through two small holes) or hang with twine",
+            "Turn on the lights and adjust the placement until it glows evenly",
           ],
-          image: { src: lights4, alt: "Final assembly" },
-
+          image: { src: lights4, alt: "Finished plastic bottle lights glowing" },
         },
-      ],      
+      ],
     },
-  },
+  }
+  
 ];
