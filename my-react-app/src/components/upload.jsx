@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 
 export default function Upload({
   multiple = false, // for your flow: single image is simpler
@@ -17,11 +17,6 @@ export default function Upload({
   const maxBytes = maxSizeMB * 1024 * 1024;
 
   const firstFile = files[0] || null;
-
-  const previewUrl = useMemo(() => {
-    if (!firstFile) return "";
-    return URL.createObjectURL(firstFile);
-  }, [firstFile]);
 
   function openPicker() {
     setError("");
@@ -118,24 +113,14 @@ export default function Upload({
 
       {files.length > 0 ? (
         <div
-          className="flex-1 rounded-2xl bg-white p-4 overflow-auto hover:bg-[#F5F5F5] transition-colors duration-300"
+          className="flex-1 rounded-2xl bg-white p-4 flex items-center justify-center hover:bg-[#F5F5F5] transition-colors duration-300"
           style={{
             borderStyle: "dashed",
             borderWidth: "2px",
             borderColor: "#E5E5E5",
           }}
         >
-          {previewUrl ? (
-            <div className="mb-4 overflow-hidden rounded-2xl border border-zinc-200 bg-zinc-50">
-              <img
-                src={previewUrl}
-                alt="Upload preview"
-                className="w-full h-64 object-cover"
-              />
-            </div>
-          ) : null}
-
-          <ul className="space-y-2">
+          <ul className="space-y-2 w-full ">
             {files.map((f, i) => (
               <li
                 key={`${f.name}-${f.size}-${i}`}
