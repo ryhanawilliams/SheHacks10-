@@ -11,164 +11,155 @@ export default function LoginPage() {
 
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: window.location.origin },
+      options: {
+        emailRedirectTo: window.location.origin,
+      },
     });
 
     if (error) setMsg(error.message);
-    else setMsg("Check your email for the login link.");
+    else setMsg("Check your email for the login link ✨");
   };
 
-  return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-        fontFamily:
-          '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-        padding: "20px",
-      }}
-    >
-      <div
-        style={{
-          background: "white",
-          borderRadius: "20px",
-          boxShadow: "0 20px 60px rgba(0, 0, 0, 0.3)",
-          padding: "50px 40px",
-          maxWidth: "420px",
-          width: "100%",
-          boxSizing: "border-box",
-        }}
-      >
-        <div style={{ textAlign: "center", marginBottom: "40px" }}>
-          <h2
-            style={{
-              fontSize: "32px",
-              fontWeight: "700",
-              color: "#1a202c",
-              margin: "0 0 10px 0",
-            }}
-          >
-            Welcome Back
-          </h2>
-          <p
-            style={{
-              fontSize: "15px",
-              color: "#718096",
-              margin: "0",
-            }}
-          >
-            Sign in to continue to your account
-          </p>
-        </div>
+  const styles = {
+    page: {
+      minHeight: "100vh",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: 24,
+      background: "#f5f5f5",
+      fontFamily:
+        '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+    },
+    card: {
+      width: "min(820px, 92vw)",
+      background: "#fff",
+      borderRadius: 20,
+      boxShadow: "0 18px 55px rgba(0,0,0,0.12)",
+      padding: "56px 64px",
+      boxSizing: "border-box",
+      textAlign: "center",
+    },
+    logo: {
+      width: 72,
+      height: 72,
+      borderRadius: "50%",
+      background: "#ff6b8f",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      color: "#fff",
+      fontSize: 38,
+      fontWeight: 800,
+      margin: "0 auto 20px",
+    },
+    smallHeading: {
+      fontSize: 22,
+      fontWeight: 500,
+      margin: 0,
+      color: "#111",
+    },
+    bigHeading: {
+      fontSize: 40,
+      fontWeight: 800,
+      margin: "6px 0 40px",
+      color: "#000",
+    },
+    form: {
+      maxWidth: 520,
+      margin: "0 auto",
+      display: "flex",
+      flexDirection: "column",
+      gap: 22,
+      textAlign: "left",
+    },
+    label: {
+      fontSize: 15,
+      fontWeight: 500,
+      color: "#111",
+      marginBottom: 8,
+      display: "block",
+    },
+    input: {
+      width: "100%",
+      height: 56,
+      borderRadius: 10,
+      border: "1px solid #eee",
+      background: "#f6f6f6",
+      padding: "0 16px",
+      fontSize: 16,
+      outline: "none",
+      transition: "all 0.15s ease",
+    },
+    button: {
+      marginTop: 30,
+      height: 64,
+      borderRadius: 12,
+      border: "none",
+      background: "#ff6b8f",
+      color: "#fff",
+      fontSize: 18,
+      fontWeight: 700,
+      cursor: "pointer",
+      transition: "all 0.15s ease",
+    },
+    msg: (isError) => ({
+      marginTop: 24,
+      padding: "14px",
+      borderRadius: 10,
+      fontSize: 14,
+      textAlign: "center",
+      background: isError ? "#fee2e2" : "#ecfdf5",
+      color: isError ? "#991b1b" : "#065f46",
+      border: `1px solid ${isError ? "#fecaca" : "#a7f3d0"}`,
+    }),
+  };
 
-        <form
-          onSubmit={sendMagicLink}
-          style={{ display: "flex", flexDirection: "column", gap: "20px" }}
-        >
+  const isError = msg.toLowerCase().includes("error");
+
+  return (
+    <div style={styles.page}>
+      <div style={styles.card}>
+        <div style={styles.logo}>C</div>
+
+        <p style={styles.smallHeading}>Hey Upcirclr,</p>
+        <h1 style={styles.bigHeading}>Welcome to Circl.</h1>
+
+        <form onSubmit={sendMagicLink} style={styles.form}>
           <div>
-            <label
-              style={{
-                display: "block",
-                fontSize: "14px",
-                fontWeight: "600",
-                color: "#374151",
-                marginBottom: "8px",
-              }}
-            >
-              Email Address
-            </label>
+            <label style={styles.label}>Email</label>
             <input
               type="email"
+              required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@email.com"
-              required
-              style={{
-                width: "100%",
-                padding: "14px 16px",
-                fontSize: "15px",
-                border: "2px solid #e2e8f0",
-                borderRadius: "10px",
-                outline: "none",
-                transition: "all 0.3s ease",
-                boxSizing: "border-box",
-                fontFamily: "inherit",
+              style={styles.input}
+              onFocus={(e) => {
+                e.target.style.background = "#fff";
+                e.target.style.borderColor = "#ffb3c6";
               }}
-              onFocus={(e) => (e.target.style.borderColor = "#667eea")}
-              onBlur={(e) => (e.target.style.borderColor = "#e2e8f0")}
+              onBlur={(e) => {
+                e.target.style.background = "#f6f6f6";
+                e.target.style.borderColor = "#eee";
+              }}
             />
           </div>
 
           <button
             type="submit"
-            style={{
-              width: "100%",
-              padding: "14px",
-              fontSize: "16px",
-              fontWeight: "600",
-              color: "white",
-              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-              border: "none",
-              borderRadius: "10px",
-              cursor: "pointer",
-              transition: "all 0.3s ease",
-              boxShadow: "0 4px 15px rgba(102, 126, 234, 0.4)",
-              marginTop: "10px",
-            }}
+            style={styles.button}
             onMouseEnter={(e) => {
-              e.target.style.transform = "translateY(-2px)";
-              e.target.style.boxShadow = "0 6px 20px rgba(102, 126, 234, 0.6)";
+              e.currentTarget.style.transform = "translateY(-1px)";
             }}
             onMouseLeave={(e) => {
-              e.target.style.transform = "translateY(0)";
-              e.target.style.boxShadow = "0 4px 15px rgba(102, 126, 234, 0.4)";
+              e.currentTarget.style.transform = "translateY(0)";
             }}
           >
-            Send Magic Link
+            Log in
           </button>
         </form>
 
-        {msg && (
-          <div
-            style={{
-              marginTop: "25px",
-              padding: "14px 16px",
-              borderRadius: "10px",
-              fontSize: "14px",
-              lineHeight: "1.5",
-              backgroundColor:
-                msg.includes("error") || msg.includes("Error")
-                  ? "#fee2e2"
-                  : "#d1fae5",
-              color:
-                msg.includes("error") || msg.includes("Error")
-                  ? "#991b1b"
-                  : "#065f46",
-              border: `1px solid ${
-                msg.includes("error") || msg.includes("Error")
-                  ? "#fecaca"
-                  : "#a7f3d0"
-              }`,
-              textAlign: "center",
-            }}
-          >
-            {msg}
-          </div>
-        )}
-
-        <div
-          style={{
-            marginTop: "30px",
-            textAlign: "center",
-            fontSize: "13px",
-            color: "#9ca3af",
-          }}
-        >
-          We'll send you a magic link to sign in securely
-        </div>
+        {msg && <div style={styles.msg(isError)}>{msg}</div>}
       </div>
     </div>
   );
