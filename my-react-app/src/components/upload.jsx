@@ -1,17 +1,26 @@
-import React, { useRef, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 
 export default function Upload({
-  multiple = true,
-  accept = "image/*,.pdf,.doc,.docx",
-  maxFiles = 10,
-  maxSizeMB = 10, // per file
-  onFilesChange, // (files: File[]) => void
+  multiple = false,                 // for your flow: single image is simpler
+  accept = "image/*",
+  maxFiles = 1,
+  maxSizeMB = 10,
+  onFilesChange,                   // (files: File[]) => void
+  onContinue,                      // async (file: File) => void
 }) {
   const inputRef = useRef(null);
   const [files, setFiles] = useState([]); // File[]
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const maxBytes = maxSizeMB * 1024 * 1024;
+
+  const firstFile = files[0] || null;
+
+  const previewUrl = useMemo(() => {
+    if (!firstFile) return "";
+    return URL.createObjectURL(firstFile);
+  }, [firstFile]);
 
   function openPicker() {
     setError("");
@@ -24,7 +33,6 @@ export default function Upload({
     const incoming = Array.from(newFiles || []);
     if (incoming.length === 0) return;
 
-    // Basic validations
     const tooMany =
       (multiple ? files.length + incoming.length : incoming.length) > maxFiles;
     if (tooMany) {
@@ -38,11 +46,17 @@ export default function Upload({
       return;
     }
 
+    // If image-only flow, ensure it is an image
+    const nonImage = incoming.find((f) => !f.type?.startsWith("image/"));
+    if (nonImage) {
+      setError(`"${nonImage.name}" is not an image. Please upload a photo.`);
+      return;
+    }
+
     const next = multiple ? [...files, ...incoming] : [incoming[0]];
     setFiles(next);
     onFilesChange?.(next);
 
-    // allow re-selecting the same file later
     if (inputRef.current) inputRef.current.value = "";
   }
 
@@ -63,8 +77,21 @@ export default function Upload({
     return `${(kb / 1024).toFixed(1)} MB`;
   }
 
+  async function handleContinue() {
+    if (!firstFile) return;
+    setError("");
+    setIsSubmitting(true);
+    try {
+      await onContinue?.(firstFile);
+    } catch (err) {
+      setError(err?.message || "Something went wrong analyzing the image.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   return (
-    <div className="w-full h-full flex flex-col p-6">
+    <div className="w-full h-full flex flex-col p-6 gap-4">
       <input
         ref={inputRef}
         type="file"
@@ -75,21 +102,31 @@ export default function Upload({
       />
 
       {error ? (
-        <div className="mb-4 rounded-xl bg-red-50 px-3 py-2 text-xs text-red-700">
+        <div className="rounded-xl bg-red-50 px-3 py-2 text-xs text-red-700">
           {error}
         </div>
       ) : null}
 
-      {/* File list or drop zone - takes up remaining space */}
       {files.length > 0 ? (
         <div
-          className="flex-1 rounded-2xl bg-white p-6 overflow-auto hover:bg-[#F5F5F5] transition-colors duration-300"
+          className="flex-1 rounded-2xl bg-white p-4 overflow-auto hover:bg-[#F5F5F5] transition-colors duration-300"
           style={{
             borderStyle: "dashed",
             borderWidth: "2px",
             borderColor: "#E5E5E5",
           }}
         >
+          {/* Preview */}
+          {previewUrl ? (
+            <div className="mb-4 overflow-hidden rounded-2xl border border-zinc-200 bg-zinc-50">
+              <img
+                src={previewUrl}
+                alt="Upload preview"
+                className="w-full h-64 object-cover"
+              />
+            </div>
+          ) : null}
+
           <ul className="space-y-2">
             {files.map((f, i) => (
               <li
@@ -121,7 +158,6 @@ export default function Upload({
           onClick={openPicker}
           className="flex-1 rounded-2xl border-2 border-dashed border-[#CFCFCF] bg-white p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-[#F5F5F5] transition-colors duration-500"
         >
-          {/* Upload Icon */}
           <svg
             className="w-12 h-12 text-zinc-400 mb-4"
             fill="none"
@@ -137,10 +173,24 @@ export default function Upload({
           </svg>
 
           <div className="text-sm text-zinc-500">
-            Choose a file or drag it here
+            Choose a photo (or drag & drop later)
           </div>
         </div>
       )}
+
+      {/* Continue button */}
+      <button
+        type="button"
+        onClick={handleContinue}
+        disabled={!firstFile || isSubmitting}
+        className={`w-full rounded-2xl px-4 py-3 text-sm font-semibold transition
+          ${!firstFile || isSubmitting
+            ? "bg-zinc-200 text-zinc-500 cursor-not-allowed"
+            : "bg-black text-white hover:bg-zinc-800"
+          }`}
+      >
+        {isSubmitting ? "Analyzing..." : "Continue"}
+      </button>
     </div>
   );
 }

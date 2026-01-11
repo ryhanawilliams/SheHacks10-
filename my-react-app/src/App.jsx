@@ -5,6 +5,7 @@ import Profile from "./pages/profile.jsx";
 import Tutorial from "./pages/tutorial.jsx";
 import Upload from "./pages/upload.jsx";
 import History from "./pages/history.jsx";
+import Results from "./pages/results.jsx";
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/user" element={<Profile />} />
         <Route path="/tutorial/:id" element={<Tutorial />} />
+        <Route path="/results" element={<Results />} />
         <Route path="/upload" element={<Upload />} />
         <Route path="/history" element={<History />} />
       </Routes>
