@@ -38,12 +38,16 @@ export default function QrUploadModal({ isOpen, onClose, onFileReady }) {
         setQrDataUrl("");
 
         const res = await fetch("/api/sessions", { method: "POST" });
-        
+
         if (!res.ok) {
           const errorText = await res.text().catch(() => "");
-          throw new Error(`Failed to create session: ${res.status} ${errorText || res.statusText}`);
+          throw new Error(
+            `Failed to create session: ${res.status} ${
+              errorText || res.statusText
+            }`
+          );
         }
-        
+
         const data = await res.json();
 
         if (!data.sessionId) {
@@ -58,8 +62,13 @@ export default function QrUploadModal({ isOpen, onClose, onFileReady }) {
         if (cancelled) return;
         setStatus("Couldn't create session");
         const errorMsg = e.message || "Unknown error";
-        if (errorMsg.includes("fetch") || errorMsg.includes("Failed to fetch")) {
-          setError("Cannot connect to server. Make sure the backend is running on port 4000.");
+        if (
+          errorMsg.includes("fetch") ||
+          errorMsg.includes("Failed to fetch")
+        ) {
+          setError(
+            "Cannot connect to server. Make sure the backend is running on port 4000."
+          );
         } else {
           setError(errorMsg);
         }
@@ -97,7 +106,7 @@ export default function QrUploadModal({ isOpen, onClose, onFileReady }) {
     pollRef.current = setInterval(async () => {
       try {
         const res = await fetch(`/api/sessions/${sessionId}`);
-        
+
         if (!res.ok) {
           if (res.status === 404) {
             clearInterval(pollRef.current);
@@ -108,7 +117,7 @@ export default function QrUploadModal({ isOpen, onClose, onFileReady }) {
           }
           return;
         }
-        
+
         const data = await res.json();
 
         if (data?.latest) {
@@ -142,11 +151,14 @@ export default function QrUploadModal({ isOpen, onClose, onFileReady }) {
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-[520px] rounded-3xl bg-white p-6"
+        className="w-full max-w-[450px] rounded-3xl bg-white p-6"
       >
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold">Take a photo (phone)</h3>
-          <button onClick={onClose} className="rounded-xl px-3 py-2 hover:bg-zinc-100">
+          <button
+            onClick={onClose}
+            className="rounded-xl px-3 py-2 hover:bg-zinc-100"
+          >
             ✕
           </button>
         </div>
@@ -164,7 +176,9 @@ export default function QrUploadModal({ isOpen, onClose, onFileReady }) {
         ) : (
           <div className="mt-4">
             {qrDataUrl ? (
-              <img src={qrDataUrl} alt="QR code" width={240} height={240} />
+              <div className="flex justify-center py-4">
+                <img src={qrDataUrl} alt="QR code" width={240} height={240} />
+              </div>
             ) : (
               <div>Generating QR…</div>
             )}

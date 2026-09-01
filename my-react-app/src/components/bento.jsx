@@ -18,8 +18,8 @@ function HeartIcon({ filled }) {
 
 function Tabs({ categories, active, onChange }) {
   return (
-    <div className="w-full overflow-x-auto">
-      <div className="flex w-max items-center gap-4 px-1 pb-2 pt-1">
+    <div className="w-full mb-1">
+      <div className="flex items-center justify-between px-1 pb-2 pt-1">
         {categories.map((c) => {
           const isActive = c === active;
           return (
@@ -28,7 +28,7 @@ function Tabs({ categories, active, onChange }) {
               type="button"
               onClick={() => onChange(c)}
               className={[
-                "relative whitespace-nowrap text-xs font-semibold",
+                "relative whitespace-nowrap text-lg font-semibold",
                 isActive
                   ? "text-zinc-900"
                   : "text-zinc-500 hover:text-zinc-700",
@@ -36,7 +36,7 @@ function Tabs({ categories, active, onChange }) {
             >
               {c}
               {isActive ? (
-                <span className="absolute -bottom-2 left-0 right-0 mx-auto h-[2px] w-5 rounded-full bg-zinc-900" />
+                <span className="absolute -bottom-2 left-0 right-0 h-[2px] w-full rounded-full bg-zinc-900" />
               ) : null}
             </button>
           );
@@ -46,16 +46,16 @@ function Tabs({ categories, active, onChange }) {
   );
 }
 
-function BentoTile({ item, onToggleLike }) {
-  const placement = LAYOUT[item.layoutKey] ?? "";
+function BentoTile({ item, onToggleLike, useLayout }) {
+  const placement = useLayout ? LAYOUT[item.layoutKey] ?? "" : "";
   const hasImage = Boolean(item.src);
 
   return (
     <Link
       to={`/tutorial/${item.id}`}
       className={[
-        "group relative overflow-hidden rounded-2xl bg-zinc-200 shadow-sm",
-        "h-[160px] sm:h-[175px] md:h-auto",
+        "group relative block overflow-hidden rounded-2xl bg-zinc-200 shadow-sm",
+        "h-[160px] sm:h-[175px] md:h-full",
         placement,
       ].join(" ")}
     >
@@ -63,11 +63,11 @@ function BentoTile({ item, onToggleLike }) {
         <img
           src={item.src}
           alt={item.title || "Gallery item"}
-          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+          className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
           loading="lazy"
         />
       ) : (
-        <div className="grid h-full w-full place-items-center bg-gradient-to-br from-zinc-100 to-zinc-300 text-[11px] font-semibold text-zinc-600">
+        <div className="absolute inset-0 grid place-items-center bg-gradient-to-br from-zinc-100 to-zinc-300 text-[11px] font-semibold text-zinc-600">
           IMAGE
         </div>
       )}
@@ -102,6 +102,8 @@ export default function BentoGrid({ items, categories, onToggleLike }) {
     return items.filter((x) => x.category === activeCategory);
   }, [items, activeCategory]);
 
+  const isShowingAll = activeCategory === "All";
+
   return (
     <div className="w-full">
       <Tabs
@@ -110,10 +112,15 @@ export default function BentoGrid({ items, categories, onToggleLike }) {
         onChange={(c) => setActiveCategory(c)}
       />
 
-      <div className="rounded-2xl bg-zinc-100 p-3 sm:p-4">
+      <div className="rounded-2xl pt-3 pb-8">
         <div className="grid grid-cols-2 gap-3 md:grid-cols-12 md:auto-rows-[110px] md:gap-3">
           {visible.map((item) => (
-            <BentoTile key={item.id} item={item} onToggleLike={onToggleLike} />
+            <BentoTile
+              key={item.id}
+              item={item}
+              onToggleLike={onToggleLike}
+              useLayout={isShowingAll}
+            />
           ))}
         </div>
       </div>
